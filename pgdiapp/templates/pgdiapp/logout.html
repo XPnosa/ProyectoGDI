@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+	<h2 class="sub-title">La sesión se ha cerrado corectamente.</h2>
+	<div id="suit-center">
+		<div><button class="btn btn-high" onclick="location.href='{% url 'index' %}'">Volver</button></div>
+	</div>
+{% endblock %}

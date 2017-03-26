@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+	<h2 class="sub-title">Cuestionario</h2>
+	<div id="suit-center">
+		<div class="alert alert-info">Hola <strong>{{ alumno.nombre }}</strong>, para finalizar tu registro responde a estas preguntas</div><hr />
+		{% if user.is_authenticated %}
+			<div class="alert alert-block alert-error"><h4><a href="{% url 'index' %}" class="text-error">No deberías estar aquí...</a></h4></div>
+		{% else %}
+			<h3>Evaluación inicial:</h3>
+			<div class="cuetionario">
+				<fieldset class="module aligned first ">
+					<form enctype="multipart/form-data" method="post">
+						{% csrf_token %}
+						{% if respuestas.errors %}
+							<h4>Se han producido los siguientes errores:</h4>
+								<div>
+									{{ respuestas.errors }}
+								</div>
+							<br />
+						{% endif %}
+						<input id="alumno" type="hidden" name="alumno" value="{{ alumno.pk }}">
+						<table class="table-overview">
+							<tr>
+								<th><label for="id_r1">{{ preguntas.p1 }}</label></th><td>{{ respuestas.r1 }}</td>
+							</tr>
+							<tr>
+								<th><label for="id_r2">{{ preguntas.p2 }}</label></th><td>{{ respuestas.r2 }}</td>
+							</tr>
+							<tr>
+								<th><label for="id_r3">{{ preguntas.p3 }}</label></th><td>{{ respuestas.r3 }}</td>
+							</tr>
+							<tr>
+								<th><label for="id_r4">{{ preguntas.p4 }}</label></th><td>{{ respuestas.r4 }}</td>
+							</tr>
+							<tr>
+								<th><label for="id_r5">{{ preguntas.p5 }}</label></th><td>{{ respuestas.r5 }}</td>
+							</tr>
+							<tr>
+								<th><label for="id_r6">{{ preguntas.p6 }}</label></th><td>{{ respuestas.r6 }}</td>
+							</tr>
+							<tr>
+								<th><label for="id_r7">{{ preguntas.p7 }}</label></th><td>{{ respuestas.r7 }}</td>
+							</tr>
+							<tr>
+								<th><label for="id_r8">{{ preguntas.p8 }}</label></th><td>{{ respuestas.r8 }}</td>
+							</tr>
+							<tr>
+								<th><label for="id_r9">{{ preguntas.p9 }}</label></th><td>{{ respuestas.r9 }}</td>
+							</tr>
+						</table>
+						<br />
+						<button class="btn btn-high btn-info" type="submit">Confirmar</button>
+					</form>
+				</fieldset>
+			</div>
+		{% endif %}
+	</div>
+{% endblock %}

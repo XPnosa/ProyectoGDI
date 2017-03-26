@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+	<script lang='javascript'>
+		function default_mod() {
+			var modulos = document.getElementById("id_modulo").options
+			for (i = 0; i < modulos.length; i++) {
+				if (modulos[i].text == '{{ modulo }}') document.getElementById("id_modulo").selectedIndex = i;
+			}
+		}
+	</script>
+	<h2 class="sub-title">Presentación</h2>
+	<body onload="default_mod()">
+		<div id="suit-center">
+			{% if user.is_authenticated %}
+				<div class="alert alert-block alert-error"><h4><a href="{% url 'index' %}" class="text-error">No deberías estar aquí...</a></h4></div>
+			{% else %}
+			<div class="alert alert-info">Parece que estas accediendo desde la ip <strong>{{ ip }}</strong>. {% if modulo != 'desconocido' %}Seguramente seas alumno de <strong>{{ modulo }}</strong>{% endif %}</div><hr />
+			<fieldset class="module aligned first ">
+				<form enctype="multipart/form-data" method="post">
+					{% csrf_token %}
+					{% if uform.errors %}
+						<h4>Se han producido los siguientes errores:</h4>
+							<div>
+								{{ uform.errors }}
+							</div>
+						<br />
+					{% endif %}
+					{% if pform.errors %}
+						<h4>Se han producido los siguientes errores:</h4>
+							<div>
+								{{ pform.errors }}
+							</div>
+						<br />
+					{% endif %}
+					<input id="username" type="hidden" name="username" value="dummy">
+					<table class="table-overview registro">
+						<tr>
+							<td>{{ pform.nombre.label_tag }}</td><td class="reg_input">{{ pform.nombre }}</td>
+							<td>{{ pform.apellido1.label_tag }}</td><td class="reg_input">{{ pform.apellido1 }}</td>
+							<td>{{ pform.apellido2.label_tag }}</td><td class="reg_input">{{ pform.apellido2 }}</td>
+						</tr>
+						<tr>
+							<td><label for="id_modulo">Módulo:</label></td><td class="reg_input">{{ pform.modulo }}</td>
+							<td><label for="id_email">e-Mail:</label></td><td class="reg_input">{{ pform.email }}</td>
+							<td><label for="id_telefono">Teléfono:</label></td><td class="reg_input">{{ pform.telefono }}</td>
+						</tr>
+						<tr>
+							<td>{{ pform.fecha_nac.label_tag }}</td><td class="reg_input">{{ pform.fecha_nac }}</td>
+							<td><label for="id_contraseña1">Contraseña:</label></td><td class="reg_input">{{ uform.password1 }}</td>
+							<td><label for="id_contraseña2">Contraseña:</label></td><td class="reg_input">{{ uform.password2 }}</td>
+						</tr>
+					</table>
+					<br />
+					<button class="btn btn-high btn-info" type="submit">Confirmar</button>
+				</form>
+			</fieldset>
+			{% endif %}
+		</div>
+	</body>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+	<h2 class="sub-title">¡Bienvenid@!</h2>
+	<div id="suit-center">
+		{% if not user.is_authenticated %}
+		<div><button class="btn btn-high btn-info" onclick="location.href='{% url 'register' %}'">Registrate ahora</button>
+		<button class="btn btn-high btn-info" onclick="location.href='{% url 'login' %}'">Accede a tu perfil</button></div>
+		{% endif %}
+	</div>
+{% endblock %}

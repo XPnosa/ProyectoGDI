@@ -1,0 +1,35 @@
+input[type="text"], input[type="password"], input[type="datetime"], input[type="datetime-local"], input[type="date"], input[type="month"], input[type="time"], input[type="week"], input[type="number"], input[type="email"], input[type="url"], input[type="search"], input[type="tel"], input[type="color"], .uneditable-input {
+	height: 25px !important;
+}
+select {
+	width: 200px !important;
+}
+td {
+    padding: 0 5px !important;
+}
+.sub-title {
+    font-size: 20;
+    margin: 10px 0 0 10px;
+}
+.cuetionario {
+    margin-left:20px;
+}
+#id_r1, #id_r2, #id_r3, 
+#id_r4, #id_r5, #id_r6, 
+#id_r7, #id_r8, #id_r9 {
+    width: 500px;
+    top: 3px;
+    position: relative;
+}
+.registro > tbody > tr > td {
+    background: #fff;
+    padding: 5px !important;
+    padding-left: 10px !important;
+}
+.registro > tbody > tr > td > input {
+    position: relative;
+    top: 3px;
+}
+.reg_input, .data_profile {
+    background-color: #F6F7F8 !important;
+}

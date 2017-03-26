@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+	<h2 class="sub-title">Perfil público de {{ alumno.nombre }} {{ alumno.apellido1 }} {{ alumno.apellido2 }} </h2>
+	<div id="suit-center">
+		{% if not alumno.validado %}
+			<div class="alert alert-success">Has terminado tu registro en el curso de <strong>{{ alumno.modulo }}</strong>. Tu nombre de login es: <strong>{{ alumno.user.username }}</strong></div>
+			<div class="alert alert-warn">Recuerda que no podrás loguearte hasta que un <strong>profesor</strong> valide tus datos</div><hr />
+		{% endif %}
+		{% if not user.is_authenticated %}
+			<div><button class="btn btn-high btn-info" onclick="location.href='{% url 'login' %}'">Accede a tu perfil</button></div>
+		{% endif %}
+		<br />
+		<table class="table-overview registro">
+			<tr>
+				<td><strong>Alumno: </strong></td><td class="data_profile">{{ alumno.nombre }} {{ alumno.apellido1 }} {{ alumno.apellido2 }}</td>
+				<td><strong>Módulo: </strong></td><td colspan="3" class="data_profile">{{ modulo.cod }}: {{ modulo.nombre }}</td>
+			</tr>
+			<tr>
+				<td><strong>e-Mail:</strong></td><td class="data_profile">
+					{% if user.is_authenticated %}
+						{{ alumno.email }}
+					{% else %}
+						<i>Oculto</i>
+					{% endif %}
+				</td>
+				<td><strong>Teléfono:</strong></td><td class="data_profile">
+					{% if user.is_authenticated %}
+						{{ alumno.telefono }}
+					{% else %}
+						<i>Oculto</i>
+					{% endif %}
+				</td>
+				<td><strong>Fecha de nacimiento:</strong></td><td class="data_profile">
+					{% if user.is_authenticated %}
+						{{ alumno.fecha_nac }}
+					{% else %}
+						<i>Oculto</i>
+					{% endif %}
+				</td>
+			</tr>
+		</table>
+	</div>
+{% endblock %}

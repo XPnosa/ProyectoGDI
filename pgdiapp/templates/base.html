@@ -1,0 +1,59 @@
+{% load static %}
+<html>
+<head>
+	<title>{% block title %}{% endblock %}</title>
+	<link rel="icon" type="image/png" href="{% static 'images/sitelogo.png' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'pgdiapp/css/mystyle.css' %}" />
+	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+
+	<link rel="stylesheet" type="text/css" href="">
+	<link rel="stylesheet" type="text/css" href="/static/suit/bootstrap/css/bootstrap.min.css" media="all">
+	<link rel="stylesheet" type="text/css" href="/static/suit/css/suit.css" media="all">
+
+	<script type="text/javascript">window.__admin_media_prefix__ = "/static/admin/";</script>
+	<script src="/static/suit/js/jquery-2.2.4.min.js"></script>
+	<script type="text/javascript">var Suit = { $: $.noConflict() }; if (!$) $ = Suit.$; </script>
+	<script src="/static/suit/bootstrap/js/bootstrap.min.js"></script>
+</head>
+<body>
+	<div id="header" class="header">
+		<div id="branding">
+			<a href="/app/"><h1 id="site-name">PGDI</h1></a>
+		</div>
+			<div class="header-content header-content-first">
+			  <div class="header-column icon">
+				<i class="icon-time"></i>
+			  </div>
+			  <div class="header-column">
+				<span class="date">{% now "l, jS F Y" %}</span><br>
+				<span class="time" id="clock">{% now "H:i" %}</span>
+			  </div>
+			</div>
+			  <!--<div class="header-content">
+				<div class="header-column icon">
+				  <i class="icon-comment"></i>
+				</div>
+				<div class="header-column">
+				  <a href="" class="grey"><b>2</b> new messages</a>
+				</div>
+			  </div>-->
+			
+			<div id="user-tools">
+				{% if user.is_authenticated %}
+					Bienvenido/a, <strong>{{ user }}</strong>.
+					<span class="user-links">
+					<a href="{% url 'pwmod' %}">Cambiar contraseña</a>
+					<span class="separator">|</span>
+					<a href="{% url 'logout_view' %}">Terminar sesión</a>
+					</span>
+				{% else %}
+					<span class="user-links">
+					<a href="{% url 'login' %}">Login</a>
+				{% endif %}
+			</div>
+			
+		  </div>
+	{% block content %}{% endblock %}
+</body>
+</html>

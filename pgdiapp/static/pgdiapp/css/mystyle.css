@@ -33,3 +33,6 @@ td {
 .reg_input, .data_profile {
     background-color: #F6F7F8 !important;
 }
+#suit-center {
+    width: 96% !important;
+}

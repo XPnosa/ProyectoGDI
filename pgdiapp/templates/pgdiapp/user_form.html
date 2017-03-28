@@ -3,9 +3,9 @@
 {% block content %}
 	<script lang='javascript'>
 		function default_mod() {
-			var modulos = document.getElementById("id_modulo").options
-			for (i = 0; i < modulos.length; i++) {
-				if (modulos[i].text == '{{ modulo }}') document.getElementById("id_modulo").selectedIndex = i;
+			var grados = document.getElementById("id_grado").options
+			for (i = 0; i < grados.length; i++) {
+				if (grados[i].text == '{{ grado }}') document.getElementById("id_grado").selectedIndex = i;
 			}
 		}
 	</script>
@@ -15,7 +15,7 @@
 			{% if user.is_authenticated %}
 				<div class="alert alert-block alert-error"><h4><a href="{% url 'index' %}" class="text-error">No deberías estar aquí...</a></h4></div>
 			{% else %}
-			<div class="alert alert-info">Parece que estas accediendo desde la ip <strong>{{ ip }}</strong>. {% if modulo != 'desconocido' %}Seguramente seas alumno de <strong>{{ modulo }}</strong>{% endif %}</div><hr />
+			<div class="alert alert-info">Parece que estas accediendo desde la ip <strong>{{ ip }}</strong>. {% if grado != 'desconocido' %}Seguramente seas alumno de <strong>{{ grado }}</strong>{% endif %}</div><hr />
 			<fieldset class="module aligned first ">
 				<form enctype="multipart/form-data" method="post">
 					{% csrf_token %}
@@ -37,11 +37,11 @@
 					<table class="table-overview registro">
 						<tr>
 							<td>{{ pform.nombre.label_tag }}</td><td class="reg_input">{{ pform.nombre }}</td>
-							<td>{{ pform.apellido1.label_tag }}</td><td class="reg_input">{{ pform.apellido1 }}</td>
-							<td>{{ pform.apellido2.label_tag }}</td><td class="reg_input">{{ pform.apellido2 }}</td>
+							<td><label for="id_apellido1">1º Apellido:</label></td><td class="reg_input">{{ pform.apellido1 }}</td>
+							<td><label for="id_apellido2">2º Apellido:</label></td><td class="reg_input">{{ pform.apellido2 }}</td>
 						</tr>
 						<tr>
-							<td><label for="id_modulo">Módulo:</label></td><td class="reg_input">{{ pform.modulo }}</td>
+							<td><label for="id_grado">Grado:</label></td><td class="reg_input">{{ pform.grado }}</td>
 							<td><label for="id_email">e-Mail:</label></td><td class="reg_input">{{ pform.email }}</td>
 							<td><label for="id_telefono">Teléfono:</label></td><td class="reg_input">{{ pform.telefono }}</td>
 						</tr>

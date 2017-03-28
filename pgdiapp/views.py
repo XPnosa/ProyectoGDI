@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 from django.contrib.auth.decorators import login_required
 
 from .forms import UserProfileForm, RespuestaForm
-from .models import User, Perfil, Pregunta, Respuesta, Taller, Clase, Modulo
+from .models import User, Perfil, Pregunta, Respuesta, Taller, Clase, Grado
 
 from datetime import datetime
 import socket
@@ -19,15 +19,15 @@ def index(request):
 # Entrada al perfil
 def perfil(request, user_name):
 	alumno = Perfil.objects.get(user__username=user_name)
-	modulo = Modulo.objects.get(cod=alumno.modulo)
-	return render(request, 'pgdiapp/perfil.html', { 'alumno': alumno, 'modulo':modulo })
+	grado = Grado.objects.get(cod=alumno.grado)
+	return render(request, 'pgdiapp/perfil.html', { 'alumno': alumno, 'grado':grado })
 
 # Pre-registro de un nuevo alumno
 def register(request):
 	#ip = socket.gethostbyname_ex(socket.gethostname())[2][1]
 	ip = socket.gethostbyname(socket.gethostname())
 	hora = datetime.now().strftime('%H')
-	modulo = obtener_modulo(ip, hora)
+	grado = obtener_grado(ip, hora)
 	if request.method == 'POST':
 		uform = UserCreationForm(request.POST)
 		pform = UserProfileForm(data = request.POST)
@@ -42,13 +42,13 @@ def register(request):
 	else:
 		uform = UserCreationForm()
 		pform = UserProfileForm()
-	return render(request, 'pgdiapp/user_form.html', { 'uform': uform, 'pform': pform, 'modulo':modulo, 'ip':ip })
+	return render(request, 'pgdiapp/user_form.html', { 'uform': uform, 'pform': pform, 'grado':grado, 'ip':ip })
 
 # Formularo de preguntas
 def cuestionario(request, user_name):
 	usuario = User.objects.get(username=user_name)
 	perfil = Perfil.objects.get(user=usuario)
-	preguntas = Pregunta.objects.get(modulo=perfil.modulo)
+	preguntas = Pregunta.objects.get(grado=perfil.grado)
 	respuestas = []
 	if request.method == 'POST':
 		respuestas = RespuestaForm(data = request.POST)
@@ -60,17 +60,17 @@ def cuestionario(request, user_name):
 		respuestas = RespuestaForm()
 	return render(request, 'pgdiapp/cuestionario.html', { 'alumno':perfil, 'preguntas':preguntas, 'respuestas':respuestas })
 
-# Obtencion del modulo por taller
-def obtener_modulo(ip, hora):
+# Obtencion del grado por taller
+def obtener_grado(ip, hora):
 	if int(hora) > 15:
 		es_nocturno = True
 	else:
 		es_nocturno = False
 	try:
-		modulo = Clase.objects.get(taller__numero=ip[8:9], modulo__nocturno=es_nocturno).modulo.cod
+		grado = Clase.objects.get(taller__numero=ip[8:9], grado__nocturno=es_nocturno).grado.cod
 	except:
-		modulo = 'desconocido'
-	return modulo
+		grado = 'desconocido'
+	return grado
 
 # Generacion del nombre del usuario
 def generar_username(nom, ap1, ap2):

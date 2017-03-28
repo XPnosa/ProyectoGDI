@@ -3,10 +3,10 @@
 {% block content %}
 	<h2 class="sub-title">Cuestionario</h2>
 	<div id="suit-center">
-		<div class="alert alert-info">Hola <strong>{{ alumno.nombre }}</strong>, para finalizar tu registro responde a estas preguntas</div><hr />
 		{% if user.is_authenticated %}
 			<div class="alert alert-block alert-error"><h4><a href="{% url 'index' %}" class="text-error">No deberías estar aquí...</a></h4></div>
 		{% else %}
+			<div class="alert alert-info">Hola <strong>{{ alumno.nombre }}</strong>, para finalizar tu registro responde a estas preguntas</div><hr />
 			<h3>Evaluación inicial:</h3>
 			<div class="cuetionario">
 				<fieldset class="module aligned first ">

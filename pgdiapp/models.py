@@ -15,7 +15,7 @@ class Taller(models.Model):
 		ordering = ["cod"]
 		verbose_name_plural = "Talleres"
 
-class Modulo(models.Model):
+class Grado(models.Model):
 	cod = models.CharField(max_length=5, unique=True)
 	nombre = models.CharField(max_length=200, unique=True)
 	nocturno = models.BooleanField(default=False)
@@ -23,22 +23,22 @@ class Modulo(models.Model):
 		return str(self.cod)
 	class Meta:
 		ordering = ["cod"]
-		verbose_name_plural = "Modulos"
+		verbose_name_plural = "Grados"
 
 class Clase(models.Model):
-	modulo = models.ForeignKey(Modulo, on_delete=models.CASCADE)
+	grado = models.ForeignKey(Grado, on_delete=models.CASCADE)
 	taller = models.ForeignKey(Taller, on_delete=models.CASCADE)
 	curso = models.IntegerField(validators=[MinValueValidator(1),MaxValueValidator(2)])
 	def __str__(self):
-		return str(self.modulo) + " - " + str(self.taller)
+		return str(self.grado) + " - " + str(self.taller)
 	class Meta:
-		ordering = ["modulo","taller"]
-		unique_together = ('modulo', 'taller')
+		ordering = ["grado","taller"]
+		unique_together = ('grado', 'taller')
 		verbose_name_plural = "Clases"
 
 class Perfil(models.Model):
 	user = models.OneToOneField(User, unique=True, on_delete=models.CASCADE)
-	modulo = models.ForeignKey(Modulo, on_delete=models.CASCADE)
+	grado = models.ForeignKey(Grado, on_delete=models.CASCADE)
 	info = models.TextField(default=None, blank=True, null=True)
 	nombre = models.CharField(max_length=50, null=False)
 	apellido1 = models.CharField(max_length=50, null=False)
@@ -55,7 +55,7 @@ class Perfil(models.Model):
 		verbose_name_plural = "Perfiles"
 
 class Pregunta(models.Model):
-	modulo = models.OneToOneField(Modulo, on_delete=models.CASCADE, unique=True,)
+	grado = models.OneToOneField(Grado, on_delete=models.CASCADE, unique=True,)
 	p1 = models.CharField(max_length=300, null=False)
 	p2 = models.CharField(max_length=300, null=False)
 	p3 = models.CharField(max_length=300, null=False)
@@ -66,9 +66,9 @@ class Pregunta(models.Model):
 	p8 = models.CharField(max_length=300, null=False)
 	p9 = models.CharField(max_length=300, null=False)
 	def __str__(self):
-		return str(self.modulo)
+		return str(self.grado)
 	class Meta:
-		ordering = ["modulo"]
+		ordering = ["grado"]
 		verbose_name_plural = "Preguntas"
 
 class Respuesta(models.Model):

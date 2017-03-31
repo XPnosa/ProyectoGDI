@@ -1,59 +1,55 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
+	<script lang='javascript'>
+		function muestra_preguntas(n) {
+			for (i=0;i<n;i++) {
+				var pregunta = document.getElementById("id_pregunta-"+i).innerHTML;
+				document.getElementById("id_texto-"+i).innerHTML = pregunta;
+			}
+		}
+	</script>
 	<h2 class="sub-title">Cuestionario</h2>
-	<div id="suit-center">
-		{% if user.is_authenticated %}
-			<div class="alert alert-block alert-error"><h4><a href="{% url 'index' %}" class="text-error">No deberías estar aquí...</a></h4></div>
-		{% else %}
-			<div class="alert alert-info">Hola <strong>{{ alumno.nombre }}</strong>, para finalizar tu registro responde a estas preguntas</div><hr />
-			<h3>Evaluación inicial:</h3>
-			<div class="cuetionario">
-				<fieldset class="module aligned first ">
-					<form enctype="multipart/form-data" method="post">
-						{% csrf_token %}
-						{% if respuestas.errors %}
-							<h4>Se han producido los siguientes errores:</h4>
-								<div>
-									{{ respuestas.errors }}
-								</div>
+	<body onload="muestra_preguntas({{ preguntas|length }})">
+		<div id="suit-center">
+			{% if user.is_authenticated %}
+				<div class="alert alert-block alert-error"><h4><a href="{% url 'index' %}" class="text-error">No deberías estar aquí...</a></h4></div>
+			{% else %}
+				<div class="alert alert-info">Hola <strong>{{ alumno.nombre }}</strong>, para finalizar tu registro responde a estas preguntas</div><hr />
+				<h3>Evaluación inicial:</h3>
+				<div class="cuetionario">
+					<fieldset class="module aligned first ">
+						<form enctype="multipart/form-data" method="post">
+							{% csrf_token %}
+							{{ respuestas.management_form }}
+							{% if respuestas.errors %}
+								<h4>Se han producido los siguientes errores:</h4>
+									<div>
+										{{ respuestas.errors }}
+									</div>
+								<br />
+							{% endif %}
+							<table class="form-invisible">
+								{% for pregunta in preguntas %}
+								<tr>
+									<input id="id_form-{{ forloop.counter0 }}-pregunta" type="hidden" name="form-{{ forloop.counter0 }}-pregunta" value="{{ pregunta.pregunta.pk }}">
+									<th><label id="id_pregunta-{{ forloop.counter0 }}">{{ pregunta.pregunta.texto }}</label></th>
+								</tr>
+								{% endfor %}
+							</table><table class="table-overview">
+								{% for respuesta in respuestas %}
+								<tr>
+									<input id="id_form-{{ forloop.counter0 }}-alumno" type="hidden" name="form-{{ forloop.counter0 }}-alumno" value="{{ alumno.pk }}">
+									<th><label id="id_texto-{{ forloop.counter0 }}">...</label></th><td><input class="texto_respuesta" id="id_form-{{ forloop.counter0 }}-texto" maxlength="300" name="form-{{ forloop.counter0 }}-texto" type="text"></td>
+								</tr>
+								{% endfor %}
+							</table>
 							<br />
-						{% endif %}
-						<input id="alumno" type="hidden" name="alumno" value="{{ alumno.pk }}">
-						<table class="table-overview">
-							<tr>
-								<th><label for="id_r1">{{ preguntas.p1 }}</label></th><td>{{ respuestas.r1 }}</td>
-							</tr>
-							<tr>
-								<th><label for="id_r2">{{ preguntas.p2 }}</label></th><td>{{ respuestas.r2 }}</td>
-							</tr>
-							<tr>
-								<th><label for="id_r3">{{ preguntas.p3 }}</label></th><td>{{ respuestas.r3 }}</td>
-							</tr>
-							<tr>
-								<th><label for="id_r4">{{ preguntas.p4 }}</label></th><td>{{ respuestas.r4 }}</td>
-							</tr>
-							<tr>
-								<th><label for="id_r5">{{ preguntas.p5 }}</label></th><td>{{ respuestas.r5 }}</td>
-							</tr>
-							<tr>
-								<th><label for="id_r6">{{ preguntas.p6 }}</label></th><td>{{ respuestas.r6 }}</td>
-							</tr>
-							<tr>
-								<th><label for="id_r7">{{ preguntas.p7 }}</label></th><td>{{ respuestas.r7 }}</td>
-							</tr>
-							<tr>
-								<th><label for="id_r8">{{ preguntas.p8 }}</label></th><td>{{ respuestas.r8 }}</td>
-							</tr>
-							<tr>
-								<th><label for="id_r9">{{ preguntas.p9 }}</label></th><td>{{ respuestas.r9 }}</td>
-							</tr>
-						</table>
-						<br />
-						<button class="btn btn-high btn-info" type="submit">Confirmar</button>
-					</form>
-				</fieldset>
-			</div>
-		{% endif %}
-	</div>
+							<button class="btn btn-high btn-info" type="submit">Confirmar</button>
+						</form>
+					</fieldset>
+				</div>
+			{% endif %}
+		</div>
+	</body>
 {% endblock %}

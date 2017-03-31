@@ -14,9 +14,7 @@ td {
 .cuetionario {
     margin-left:20px;
 }
-#id_r1, #id_r2, #id_r3, 
-#id_r4, #id_r5, #id_r6, 
-#id_r7, #id_r8, #id_r9 {
+.texto_respuesta {
     width: 500px;
     top: 3px;
     position: relative;
@@ -32,6 +30,9 @@ td {
 }
 .reg_input, .data_profile {
     background-color: #F6F7F8 !important;
+}
+.form-invisible {
+    display: none !important;
 }
 #suit-center {
     width: 96% !important;

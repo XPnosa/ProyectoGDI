@@ -1,15 +1,15 @@
 from django.shortcuts import render, redirect, render_to_response 
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpRequest
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
+from django.forms import formset_factory
 
 from .forms import UserProfileForm, RespuestaForm
-from .models import User, Perfil, Pregunta, Respuesta, Taller, Clase, Grado
+from .models import *
 
 from datetime import datetime
-import socket
 
 # Vistas
 
@@ -24,17 +24,18 @@ def perfil(request, user_name):
 
 # Pre-registro de un nuevo alumno
 def register(request):
-	#ip = socket.gethostbyname_ex(socket.gethostname())[2][1]
-	ip = socket.gethostbyname(socket.gethostname())
+	ip = request.META['REMOTE_ADDR']
 	hora = datetime.now().strftime('%H')
 	grado = obtener_grado(ip, hora)
+	freeun = True
 	if request.method == 'POST':
 		uform = UserCreationForm(request.POST)
 		pform = UserProfileForm(data = request.POST)
 		if uform.is_valid() and pform.is_valid():
 			user = uform.save(commit = False)
 			profile = pform.save(commit = False)
-			user.username = generar_username(profile.nombre,profile.apellido1,profile.apellido2)
+			if not freeun:
+				user.username = generar_username(profile.nombre,profile.apellido1,profile.apellido2)
 			user.save()
 			profile.user = user
 			profile.save()
@@ -42,23 +43,23 @@ def register(request):
 	else:
 		uform = UserCreationForm()
 		pform = UserProfileForm()
-	return render(request, 'pgdiapp/user_form.html', { 'uform': uform, 'pform': pform, 'grado':grado, 'ip':ip })
+	return render(request, 'pgdiapp/user_form.html', { 'uform': uform, 'pform': pform, 'grado':grado, 'ip':ip, 'freeun':freeun })
 
 # Formularo de preguntas
 def cuestionario(request, user_name):
 	usuario = User.objects.get(username=user_name)
 	perfil = Perfil.objects.get(user=usuario)
-	preguntas = Pregunta.objects.get(grado=perfil.grado)
-	respuestas = []
+	preguntas = Cuestionario.objects.filter(grado=perfil.grado)
+	RespuestaFormSet = formset_factory(RespuestaForm, extra=len(preguntas))
 	if request.method == 'POST':
-		respuestas = RespuestaForm(data = request.POST)
+		respuestas = RespuestaFormSet(request.POST)
 		if respuestas.is_valid():
-			respuesta = respuestas.save(commit = False)
-			respuesta.save()
-		return HttpResponseRedirect("/app/perfil/"+perfil.user.username)
+			for respuesta in respuestas:
+				respuesta.save()
+			return HttpResponseRedirect("/app/perfil/"+perfil.user.username)
 	else:
-		respuestas = RespuestaForm()
-	return render(request, 'pgdiapp/cuestionario.html', { 'alumno':perfil, 'preguntas':preguntas, 'respuestas':respuestas })
+		respuestas = RespuestaFormSet()
+	return render(request, 'pgdiapp/cuestionario.html', { 'alumno':perfil, 'preguntas':preguntas, 'respuestas':RespuestaFormSet })
 
 # Obtencion del grado por taller
 def obtener_grado(ip, hora):

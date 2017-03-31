@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 from django.contrib.auth.models import User
 from django.db import models
 from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
+from localflavor.es.forms import ESIdentityCardNumberField
 
 # Modelos
 
@@ -40,6 +41,8 @@ class Perfil(models.Model):
 	user = models.OneToOneField(User, unique=True, on_delete=models.CASCADE)
 	grado = models.ForeignKey(Grado, on_delete=models.CASCADE)
 	info = models.TextField(default=None, blank=True, null=True)
+	dni_regex = RegexValidator(regex=r'^[0-9]{8}[a-zA-Z]{1}$')
+	dni = models.CharField(max_length=9, validators=[dni_regex], unique=True, null=False)
 	nombre = models.CharField(max_length=50, null=False)
 	apellido1 = models.CharField(max_length=50, null=False)
 	apellido2 = models.CharField(max_length=50, null=False)
@@ -55,35 +58,29 @@ class Perfil(models.Model):
 		verbose_name_plural = "Perfiles"
 
 class Pregunta(models.Model):
-	grado = models.OneToOneField(Grado, on_delete=models.CASCADE, unique=True,)
-	p1 = models.CharField(max_length=300, null=False)
-	p2 = models.CharField(max_length=300, null=False)
-	p3 = models.CharField(max_length=300, null=False)
-	p4 = models.CharField(max_length=300, null=False)
-	p5 = models.CharField(max_length=300, null=False)
-	p6 = models.CharField(max_length=300, null=False)
-	p7 = models.CharField(max_length=300, null=False)
-	p8 = models.CharField(max_length=300, null=False)
-	p9 = models.CharField(max_length=300, null=False)
+	texto = models.CharField(max_length=300, null=False)
 	def __str__(self):
-		return str(self.grado)
+		return str(self.texto)
 	class Meta:
-		ordering = ["grado"]
+		ordering = ["texto"]
 		verbose_name_plural = "Preguntas"
 
-class Respuesta(models.Model):
-	alumno = models.OneToOneField(Perfil, on_delete=models.CASCADE, unique=True,)
-	r1 = models.CharField(max_length=300, null=False)
-	r2 = models.CharField(max_length=300, null=False)
-	r3 = models.CharField(max_length=300, null=False)
-	r4 = models.CharField(max_length=300, null=False)
-	r5 = models.CharField(max_length=300, null=False)
-	r6 = models.CharField(max_length=300, null=False)
-	r7 = models.CharField(max_length=300, null=False)
-	r8 = models.CharField(max_length=300, null=False)
-	r9 = models.CharField(max_length=300, null=False)
+class Cuestionario(models.Model):
+	grado = models.ForeignKey(Grado, on_delete=models.CASCADE)
+	pregunta = models.ForeignKey(Pregunta, on_delete=models.CASCADE)
 	def __str__(self):
-		return str(self.alumno)
+		return str(self.grado)+": "+str(self.pregunta)
 	class Meta:
-		ordering = ["alumno"]
+		ordering = ["grado",'pregunta']
+		unique_together = ('grado','pregunta')
+		verbose_name_plural = "Cuestionarios"
+
+class Respuesta(models.Model):
+	alumno = models.ForeignKey(Perfil, on_delete=models.CASCADE)
+	pregunta = models.ForeignKey(Pregunta, on_delete=models.CASCADE)
+	texto = models.CharField(max_length=300, null=False)
+	def __str__(self):
+		return str(self.alumno)+" - "+str(self.pregunta)+": "+str(self.texto)
+	class Meta:
+		ordering = ["alumno","pregunta"]
 		verbose_name_plural = "Respuestas"

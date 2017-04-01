@@ -6,15 +6,19 @@ ReadMe
 
 **Changelog**
 
+- v0.4
+	- Añadido y adaptado como backend de autenticación ldap
+	- Retirado el sistema de autenticación por modelo
+
 - v0.3:
 	- Corregida la obtención de la ip del cliente
 	- Añadido el modelo Cuestionario
-	- Añadido el campo dni al modelo Perfil
+	- Añadido el campo dni al modelo "Perfil
 	- Modificados los modelos Pregunta y Respuesta
 	- Adaptadas las plantillas de registro y cuestionarios
 
 - v0.2:
-	- Remobrado el concepto de "Modulo" a "Grado"
+	- Renombrado el concepto de "Modulo" a "Grado"
 	- Cambios menores en plantillas y css
 
 - v0.1: 

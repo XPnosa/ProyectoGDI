@@ -88,8 +88,21 @@ def pwmod(request):
 	return redirect('/app')
 
 # Login (TODO)
-def login(request):
-	return redirect('/app')
+def login_view(request):
+	if request.method == 'POST':
+		username = request.POST['username']
+		password = request.POST['password']
+		user = authenticate(username=username, password=password)
+		if user is not None:
+			login(request, user)
+			return HttpResponseRedirect("/app/perfil/"+username)
+		else:
+			return redirect('/app/error')
+	else:
+		return render(request, 'pgdiapp/login.html')
+
+def error(request):
+	return render(request, 'pgdiapp/error.html')
 
 # Logout
 def logout_view(request):

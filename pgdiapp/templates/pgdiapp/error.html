@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+	<h2 class="sub-title">No ha sido posible iniciar sesión.</h2>
+	<div id="suit-center">
+		<div class="alert alert-warn">Comprueba que tus credenciales sean correctas y que tu cuenta haya sido validada por un <strong>profesor</strong></div><hr />
+		<div>
+			<button class="btn btn-high btn-info" onclick="location.href='{% url 'login_view' %}'">Intentar de nuevo</button> &nbsp; 
+			<button class="btn btn-high" onclick="location.href='{% url 'index' %}'">Volver</button>
+		</div>
+	</div>
+{% endblock %}

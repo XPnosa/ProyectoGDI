@@ -29,7 +29,6 @@ ALLOWED_HOSTS = ['*']
 
 AUTHENTICATION_BACKENDS = (
     'django_auth_ldap.backend.LDAPBackend',
-    'django.contrib.auth.backends.ModelBackend',
 )
 
 # ldap authentication
@@ -37,20 +36,20 @@ AUTHENTICATION_BACKENDS = (
 from django_auth_ldap.config import LDAPSearch, PosixGroupType
 
 AUTH_LDAP_SERVER_URI = "ldap://172.17.0.2:389"
-AUTH_LDAP_BIND_DN = "cn=admin,dc=example,dc=com"
+AUTH_LDAP_BIND_DN = "cn=admin,dc=pgdi,dc=inf"
 AUTH_LDAP_BIND_PASSWORD = "toor"
 
-AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
+AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=usuarios,dc=pgdi,dc=inf",
     ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
-AUTH_LDAP_GROUP_SEARCH = LDAPSearch("ou=groups,dc=example,dc=com",
+AUTH_LDAP_GROUP_SEARCH = LDAPSearch("ou=grupos,dc=pgdi,dc=inf",
     ldap.SCOPE_SUBTREE, "(objectClass=PosixGroup)"
 )
 
 AUTH_LDAP_GROUP_TYPE = PosixGroupType(name_attr="cn")
 AUTH_LDAP_USER_FLAGS_BY_GROUP = {
-    "is_active": "cn=activos,ou=groups,dc=example,dc=com",
-    "is_staff": "cn=profesores,ou=groups,dc=example,dc=com",
-    "is_superuser": "cn=profesores,ou=groups,dc=example,dc=com"
+    "is_active": "cn=activos,ou=grupos,dc=pgdi,dc=inf",
+    "is_staff": "cn=profesores,ou=grupos,dc=pgdi,dc=inf",
+    "is_superuser": "cn=administradores,ou=grupos,dc=pgdi,dc=inf"
 }
 
 AUTH_LDAP_FIND_GROUP_PERMS = True

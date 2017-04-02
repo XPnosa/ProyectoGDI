@@ -84,3 +84,13 @@ class Respuesta(models.Model):
 	class Meta:
 		ordering = ["alumno","pregunta"]
 		verbose_name_plural = "Respuestas"
+
+class Configuracion(models.Model):
+	clave = models.CharField(max_length=100, unique=True)
+	info = models.TextField(default=None, blank=True, null=True)
+	valor = models.BooleanField(default=False)
+	def __str__(self):
+		return str(self.clave)
+	class Meta:
+		ordering = ["clave"]
+		verbose_name_plural = "Configuraciones"

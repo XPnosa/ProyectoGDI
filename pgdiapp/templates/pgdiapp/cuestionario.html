@@ -12,7 +12,7 @@
 	<h2 class="sub-title">Cuestionario</h2>
 	<body onload="muestra_preguntas({{ preguntas|length }})">
 		<div id="suit-center">
-			{% if user.is_authenticated %}
+			{% if user.is_authenticated or not openrg %}
 				<div class="alert alert-block alert-error"><h4><a href="{% url 'index' %}" class="text-error">No deberías estar aquí...</a></h4></div>
 			{% else %}
 				<div class="alert alert-info">Hola <strong>{{ alumno.nombre }}</strong>, para finalizar tu registro responde a estas preguntas</div><hr />

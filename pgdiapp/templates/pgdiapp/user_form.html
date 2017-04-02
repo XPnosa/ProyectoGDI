@@ -12,7 +12,7 @@
 	<h2 class="sub-title">Presentación</h2>
 	<body onload="default_mod()">
 		<div id="suit-center">
-			{% if user.is_authenticated %}
+			{% if user.is_authenticated or not openrg %}
 				<div class="alert alert-block alert-error"><h4><a href="{% url 'index' %}" class="text-error">No deberías estar aquí...</a></h4></div>
 			{% else %}
 			<div class="alert alert-info">Parece que estas accediendo desde la ip <strong>{{ ip }}</strong>. {% if grado != 'desconocido' %}Seguramente seas alumno de <strong>{{ grado }}</strong>{% endif %}</div><hr />
@@ -37,10 +37,10 @@
 					<table class="table-overview registro">
 						<tr>
 							{% if freeun %}
-							<td colspan="2" class="reg_input">Es posible elegir el nombre de usuario.</td>
-							<td>{{ uform.username.label_tag }}</td><td class="reg_input">{{ uform.username }}</td>
+							<td colspan="2" class="reg_input"><strong>❋ Puede elegir el nombre de usuario deseado.</strong></td>
+							<td><label for="id_username">Username:</label></td><td class="reg_input">{{ uform.username }}</td>
 							{% else %}
-							<td colspan="2" class="reg_input">No es posible elegir el nombre de usuario.</td>
+							<td colspan="2" class="reg_input"><strong>❋ No es posible elegir el nombre de usuario.</strong></td>
 							<input id="username" type="hidden" name="username" value="dummy">
 							<td>{{ uform.username.label_tag }}</td><td class="reg_input"><input disabled="disabled" type="text"></td>
 							{% endif %}
@@ -48,7 +48,7 @@
 						</tr>
 						<tr>
 							<td>{{ pform.nombre.label_tag }}</td><td class="reg_input">{{ pform.nombre }}</td>
-							<td><label for="id_apellido1">1ᵉʳ Apellido:</label></td><td class="reg_input">{{ pform.apellido1 }}</td>
+							<td><label for="id_apellido1">1º Apellido:</label></td><td class="reg_input">{{ pform.apellido1 }}</td>
 							<td><label for="id_apellido2">2º Apellido:</label></td><td class="reg_input">{{ pform.apellido2 }}</td>
 						</tr>
 						<tr>

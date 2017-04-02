@@ -37,3 +37,9 @@ td {
 #suit-center {
     width: 96% !important;
 }
+.top-button {
+    float: right;
+    position: relative;
+    top: -5px;
+    left: 30px;
+}

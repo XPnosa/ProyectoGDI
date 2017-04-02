@@ -6,7 +6,11 @@ ReadMe
 
 **Changelog**
 
-- v0.4
+- v0.5:
+	- Añadida opción para activar/desactivar el registro de nuevos alumnos
+	- Añadida opción para activar/desactivar la elección de nombre usuario
+
+- v0.4:
 	- Añadido y adaptado como backend de autenticación ldap
 	- Retirado el sistema de autenticación por modelo
 
@@ -21,5 +25,5 @@ ReadMe
 	- Renombrado el concepto de "Modulo" a "Grado"
 	- Cambios menores en plantillas y css
 
-- v0.1: 
+- v0.1:
 	- Prototipo inicial

@@ -14,7 +14,29 @@ from datetime import datetime
 # Vistas
 
 def index(request):
-	return render(request, 'pgdiapp/index.html')
+	openrg = Configuracion.objects.get(clave='openregister').valor
+	freeun = Configuracion.objects.get(clave='freeusername').valor
+	return render(request, 'pgdiapp/index.html', { 'openrg':openrg, 'freeun':freeun })
+
+# Habilitar/Deshabilitar el registro
+def regmod(request):
+	openrg = Configuracion.objects.get(clave='openregister')
+	if openrg.valor:
+		openrg.valor = False
+	else:
+		openrg.valor = True
+	openrg.save()
+	return redirect('/app')
+
+# Habilitar/Deshabilitar la eleccion del nombre de usuario
+def funmod(request):
+	freeun = Configuracion.objects.get(clave='freeusername')
+	if freeun.valor:
+		freeun.valor = False
+	else:
+		freeun.valor = True
+	freeun.save()
+	return redirect('/app')
 
 # Entrada al perfil
 def perfil(request, user_name):
@@ -27,7 +49,8 @@ def register(request):
 	ip = request.META['REMOTE_ADDR']
 	hora = datetime.now().strftime('%H')
 	grado = obtener_grado(ip, hora)
-	freeun = True
+	freeun = Configuracion.objects.get(clave='freeusername').valor
+	openrg = Configuracion.objects.get(clave='openregister').valor
 	if request.method == 'POST':
 		uform = UserCreationForm(request.POST)
 		pform = UserProfileForm(data = request.POST)
@@ -43,7 +66,7 @@ def register(request):
 	else:
 		uform = UserCreationForm()
 		pform = UserProfileForm()
-	return render(request, 'pgdiapp/user_form.html', { 'uform': uform, 'pform': pform, 'grado':grado, 'ip':ip, 'freeun':freeun })
+	return render(request, 'pgdiapp/user_form.html', { 'uform': uform, 'pform': pform, 'grado':grado, 'ip':ip, 'freeun':freeun, 'openrg':openrg })
 
 # Formularo de preguntas
 def cuestionario(request, user_name):
@@ -51,6 +74,7 @@ def cuestionario(request, user_name):
 	perfil = Perfil.objects.get(user=usuario)
 	preguntas = Cuestionario.objects.filter(grado=perfil.grado)
 	RespuestaFormSet = formset_factory(RespuestaForm, extra=len(preguntas))
+	openrg = Configuracion.objects.get(clave='openregister').valor
 	if request.method == 'POST':
 		respuestas = RespuestaFormSet(request.POST)
 		if respuestas.is_valid():
@@ -59,7 +83,7 @@ def cuestionario(request, user_name):
 			return HttpResponseRedirect("/app/perfil/"+perfil.user.username)
 	else:
 		respuestas = RespuestaFormSet()
-	return render(request, 'pgdiapp/cuestionario.html', { 'alumno':perfil, 'preguntas':preguntas, 'respuestas':RespuestaFormSet })
+	return render(request, 'pgdiapp/cuestionario.html', { 'alumno':perfil, 'preguntas':preguntas, 'respuestas':RespuestaFormSet, 'openrg':openrg })
 
 # Obtencion del grado por taller
 def obtener_grado(ip, hora):
@@ -87,7 +111,7 @@ def generar_username(nom, ap1, ap2):
 def pwmod(request):
 	return redirect('/app')
 
-# Login (TODO)
+# Login
 def login_view(request):
 	if request.method == 'POST':
 		username = request.POST['username']
@@ -95,6 +119,10 @@ def login_view(request):
 		user = authenticate(username=username, password=password)
 		if user is not None:
 			login(request, user)
+			try:
+				perfil = Perfil.objects.get(user__username=username)
+			except:
+				return redirect('/app')
 			return HttpResponseRedirect("/app/perfil/"+username)
 		else:
 			return redirect('/app/error')

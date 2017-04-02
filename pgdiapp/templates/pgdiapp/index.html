@@ -1,11 +1,27 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
-	<h2 class="sub-title">¡Bienvenid@!</h2>
+	<h2 class="sub-title">Gestión Departamento Informática</h2>
 	<div id="suit-center">
+		{% if user.is_superuser %}
+			<div class="alert {% if openrg %}alert-warn{% else %}alert-info{% endif %}">El registro de nuevos alumnos esta <strong>{% if openrg %}abierto{% else %}cerrado{% endif %}</strong><button class="top-button btn btn-high{% if not openrg %} btn-info{% endif %}" onclick="location.href='{% url 'regmod' %}'">{% if openrg %}Cerrar{% else %}Abrir{% endif %} el registro de nuevos alumnos</button></div>
+			{% if openrg %}
+				<div class="alert {% if freeun %}alert-warn{% else %}alert-info{% endif %}">La elección del nombr de usuario esta <strong>{% if freeun %}activada{% else %}desactivada{% endif %}</strong><button class="top-button btn btn-high{% if not freeun %} btn-info{% endif %}" onclick="location.href='{% url 'funmod' %}'">{% if freeun %}Desactivar{% else %}Activar{% endif %} la eleción del nombre de usuario</button></div>
+			{% endif %}
+			<hr />
+		{% endif %}
 		{% if not user.is_authenticated %}
-		<div><button class="btn btn-high btn-info" onclick="location.href='{% url 'register' %}'">Registrate ahora</button>
-		<button class="btn btn-high btn-info" onclick="location.href='{% url 'login_view' %}'">Accede a tu perfil</button></div>
+			<div>
+				{% if openrg %}<button class="btn btn-high btn-info" onclick="location.href='{% url 'register' %}'">Registrate ahora</button>{% endif %}
+				<button class="btn btn-high btn-info" onclick="location.href='{% url 'login_view' %}'">Accede a tu perfil</button>
+			</div>
+		{% else %}
+			{# user.ldap_user.dn #}
+			{# user.ldap_user.attrs #}
+			{# user.ldap_user.group_dns #}
+			{# user.ldap_user.group_names #}
+			{% if user.is_superuser %}
+			{% endif %}
 		{% endif %}
 	</div>
 {% endblock %}

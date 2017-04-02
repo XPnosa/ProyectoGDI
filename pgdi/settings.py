@@ -47,9 +47,9 @@ AUTH_LDAP_GROUP_SEARCH = LDAPSearch("ou=grupos,dc=pgdi,dc=inf",
 
 AUTH_LDAP_GROUP_TYPE = PosixGroupType(name_attr="cn")
 AUTH_LDAP_USER_FLAGS_BY_GROUP = {
-    "is_active": "cn=activos,ou=grupos,dc=pgdi,dc=inf",
-    "is_staff": "cn=profesores,ou=grupos,dc=pgdi,dc=inf",
-    "is_superuser": "cn=administradores,ou=grupos,dc=pgdi,dc=inf"
+    "is_active": "cn=activos,ou=roles,ou=grupos,dc=pgdi,dc=inf",
+    "is_staff": "cn=profesores,ou=roles,ou=grupos,dc=pgdi,dc=inf",
+    "is_superuser": "cn=administradores,ou=roles,ou=grupos,dc=pgdi,dc=inf"
 }
 
 AUTH_LDAP_FIND_GROUP_PERMS = True

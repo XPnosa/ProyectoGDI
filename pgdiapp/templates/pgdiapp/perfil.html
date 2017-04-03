@@ -11,21 +11,21 @@
 			</tr>
 			<tr>
 				<td><strong>e-Mail:</strong></td><td class="data_profile">
-					{% if user.is_authenticated and user.username == alumno.user.username or user.is_staff %}
+					{% if user.is_authenticated and user.username == alumno.0.0.1.uid.0 or user.is_staff %}
 						{{ alumno.0.0.1.mail.0 }} 
 					{% else %}
 						<i>Oculto</i>
 					{% endif %}
 				</td>
 				<td><strong>Teléfono:</strong></td><td class="data_profile">
-					{% if user.is_authenticated and user.username == alumno.user.username or user.is_staff %}
-						<i>No dispoible</i>
+					{% if user.is_authenticated and user.username == alumno.0.0.1.uid.0 or user.is_staff %}
+						{{ alumno.0.0.1.telephoneNumber.0 }}
 					{% else %}
 						<i>Oculto</i>
 					{% endif %}
 				</td>
 				<td><strong>Fecha de nacimiento:</strong></td><td class="data_profile">
-					{% if user.is_authenticated and user.username == alumno.user.username or user.is_staff %}
+					{% if user.is_authenticated and user.username == alumno.0.0.1.uid.0 or user.is_staff %}
 						<i>No dispoible</i>
 					{% else %}
 						<i>Oculto</i>

@@ -35,7 +35,7 @@ AUTHENTICATION_BACKENDS = (
 
 from django_auth_ldap.config import LDAPSearch, PosixGroupType
 
-AUTH_LDAP_SERVER_URI = "ldap://172.17.0.2:389"
+AUTH_LDAP_SERVER_URI = "ldap://pgdi:389"
 AUTH_LDAP_BIND_DN = "cn=admin,dc=pgdi,dc=inf"
 AUTH_LDAP_BIND_PASSWORD = "toor"
 
@@ -113,7 +113,7 @@ DATABASES = {
 		'NAME': 'pgdi',
 		'USER': 'pgdiuser',
 		'PASSWORD': 'pgdipass',
-		'HOST': '172.17.0.3',
+		'HOST': 'pgdi',
 		'PORT': '5432',
 	}
 }

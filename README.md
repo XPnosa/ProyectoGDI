@@ -6,9 +6,14 @@ ReadMe
 
 **Changelog**
 
+- v0.7:
+	- Añadida interfaz con la evaluación inicial del alumno
+	- Añadida interfaz para validar alumnos registrados
+	- Cambios menores en modelo, plantillas y css
+
 - v0.6:
-	- Modificada página de perfil del alumno
-	- Añadido listado de alumnos por grado
+	- Modificada la página del perfil del alumno
+	- Añadido el listado de alumnos por grado
 	- Cambios menores en plantillas y css
 
 - v0.5:

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
-	<h2 class="sub-title">Listado de alumnos de {{ grado }}</h2>
+	<h2 class="sub-title">Alumnos pendientes de validación ({{ grado }})</h2>
 	<div id="suit-center">
 		{% if not user.is_authenticated or not user.is_staff %}
 			<div class="alert alert-block alert-error"><h4><a href="{% url 'index' %}" class="text-error">No deberías estar aquí...</a></h4></div>
@@ -34,21 +34,21 @@
 						</tr>
 						{% for alumno in alumnos %}
 							<tr>
-								<td class="alumno-data">{{ alumno.0.1.uid.0 }}</td>
-								<td class="alumno-data">{{ alumno.0.1.givenName.0 }}</td>
-								<td class="alumno-data">{{ alumno.0.1.sn.0 }}</td>
-								<td class="alumno-data"><i>No disponible</i></td>
-								<td class="alumno-data"><i>No disponible</i></td>
-								<td class="alumno-data">{{ alumno.0.1.mail.0 }}</td>
-								<td class="alumno-data">{{ alumno.0.1.telephoneNumber.0 }}</td>
-								<td class="alumno-button"><button class="btn btn-high" onclick="location.href='{% url 'perfil' grado alumno.0.1.uid.0 %}'">Ver detalle</button></td>
-								<td class="alumno-button"><button class="btn btn-high" onclick="location.href='{% url 'respuestas' grado alumno.0.1.uid.0 %}'">Evaluación inicial</button></td>
+								<td class="alumno-data">{{ alumno.user.username }}</td>
+								<td class="alumno-data">{{ alumno.nombre }}</td>
+								<td class="alumno-data">{{ alumno.apellido1 }} {{ alumno.apellido2 }}</td>
+								<td class="alumno-data">{{ alumno.dni }}</td>
+								<td class="alumno-data">{{ alumno.fecha_nac }}</td>
+								<td class="alumno-data">{{ alumno.email }}</td>
+								<td class="alumno-data">{{ alumno.telefono }}</td>
+								<td class="alumno-button"><button class="btn btn-high btn-info" onclick="location.href='{% url 'alta' grado alumno.user.username %}'">Dar de alta</button></td>
+								<td class="alumno-button"><button class="btn btn-high" onclick="location.href='{% url 'respuestas' grado alumno.user.username %}'">Evaluación inicial</button></td>
 							</tr>
 						{% endfor %}
 					</table>
 				</div>
 			{% else %}
-				<div class="alert alert-warn">No existen alumnos activos para este curso de <strong>{{ grado }}</strong></div>
+				<div class="alert alert-warn">No existen alumnos pendientes de registro para este curso de <strong>{{ grado }}</strong></div>
 			{% endif %}
 			<div><button class="btn btn-high" onclick="location.href='{% url 'index' %}'">Volver</button></div>
 		{% endif %}

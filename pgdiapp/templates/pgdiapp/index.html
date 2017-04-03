@@ -25,6 +25,14 @@
 			{% endif %}
 			{% if user.is_staff %}
 				<button class="btn btn-high" onclick="location.href='{% url 'alumnos' %}'">Listado de alumnos</button>
+				<button class="btn btn-high" onclick="location.href='{% url 'pendientes' %}'">Registros pendientes</button>
+			{% endif %}
+			{% if not user.is_superuser and not user.is_staff %}
+				<button class="btn btn-high" onclick="
+					{% if 'ou=asir' in user.ldap_user.dn %}location.href='{% url 'perfil' 'ASIR' user.username %}'{% endif %}
+					{% if 'ou=dam' in user.ldap_user.dn %}location.href='{% url 'perfil' 'DAM' user.username %}'{% endif %}
+					{% if 'ou=smr' in user.ldap_user.dn %}location.href='{% url 'perfil' 'SMR' user.username %}'{% endif %}
+				">Ver mi perfil</button>
 			{% endif %}
 		{% endif %}
 	</div>

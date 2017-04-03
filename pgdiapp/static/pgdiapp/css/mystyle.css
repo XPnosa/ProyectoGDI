@@ -5,57 +5,67 @@ select {
 	width: 200px !important;
 }
 td {
-    padding: 0 5px !important;
+	padding: 0 5px !important;
 }
 .sub-title {
-    font-size: 20;
-    margin: 10px 0 0 10px;
+	font-size: 20;
+	margin: 10px 0 0 10px;
 }
 .cuetionario {
-    margin-left:20px;
+	margin-left:20px;
 }
 .texto_respuesta {
-    width: 500px;
-    top: 3px;
-    position: relative;
+	width: 500px;
+	top: 3px;
+	position: relative;
 }
 .registro > tbody > tr > td {
-    background: #fff;
-    padding: 5px !important;
-    padding-left: 10px !important;
+	background: #fff;
+	padding: 5px !important;
+	padding-left: 10px !important;
 }
 .registro > tbody > tr > td > input {
-    position: relative;
-    top: 3px;
+	position: relative;
+	top: 3px;
 }
 .reg_input, .data_profile {
-    background-color: #F6F7F8 !important;
+	background-color: #F6F7F8 !important;
 }
 .form-invisible {
-    display: none !important;
+	display: none !important;
 }
 #suit-center {
-    width: 96% !important;
+	width: 96% !important;
 }
 .top-button {
-    float: right;
-    position: relative;
-    top: -5px;
-    left: 30px;
-    width: 300px;
+	float: right;
+	position: relative;
+	top: -5px;
+	left: 30px;
+	width: 300px;
 }
 .table-alumnos {
-    width: auto !important;
-    font-size: 12px;
+	width: auto !important;
+	font-size: 12px;
 }
 .alumno-data {
-    padding: 5px 10px !important;
+	padding: 5px 10px !important;
 }
 .alumno-button {
-    padding: 0px !important;
+	padding: 0px !important;
+	height: 100% !important;
+}
+.alumno-button > button {
+	height: 100% !important;
 }
 #result_list > tbody > tr > th {
-    background-color: #ddd !important;
-    border-color: #ccc;
-    box-shadow: unset;
+	background-color: #ddd !important;
+	border-color: #ccc;
+	box-shadow: unset;
+}
+#menu > form > select {
+	position: relative;
+	top: 5px;
+	margin-right: 5px;
+	width: 100px !important;
 }

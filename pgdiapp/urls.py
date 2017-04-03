@@ -16,6 +16,9 @@ urlpatterns = [
 	url(r'^logout$', views.logout_view, name='logout_view'),
 	url(r'^logout_redirect$', views.logoutr, name='logoutr'),
 	url(r'^alumnos$', views.alumnos, name='alumnos'),
+	url(r'^pendientes$', views.pendientes, name='pendientes'),
 	url(r'^perfil/(?P<grado>[A-Z]+)/(?P<usuario>[a-zA-Z0-9]+)$', views.perfil, name='perfil'),
+	url(r'^perfil/(?P<grado>[A-Z]+)/(?P<usuario>[a-zA-Z0-9]+)/respuestas$', views.respuestas, name='respuestas'),
+	url(r'^perfil/(?P<grado>[A-Z]+)/(?P<usuario>[a-zA-Z0-9]+)/alta$', views.alta, name='alta'),
 	url(r'^cuestionario/(?P<user_name>[a-zA-Z0-9]+)$', views.cuestionario, name='cuestionario'),
 ]

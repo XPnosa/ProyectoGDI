@@ -38,7 +38,7 @@ class Clase(models.Model):
 		verbose_name_plural = "Clases"
 
 class Perfil(models.Model):
-	user = models.OneToOneField(User, unique=True, on_delete=models.CASCADE)
+	user = models.ForeignKey(User, on_delete=models.CASCADE)
 	grado = models.ForeignKey(Grado, on_delete=models.CASCADE)
 	info = models.TextField(default=None, blank=True, null=True)
 	dni_regex = RegexValidator(regex=r'^[0-9]{8}[a-zA-Z]{1}$')
@@ -55,6 +55,7 @@ class Perfil(models.Model):
 		return str(self.user.username)
 	class Meta:
 		ordering = ["user"]
+		unique_together = ('user','grado')
 		verbose_name_plural = "Perfiles"
 
 class Pregunta(models.Model):
@@ -83,6 +84,7 @@ class Respuesta(models.Model):
 		return str(self.alumno)+" - "+str(self.pregunta)+": "+str(self.texto)
 	class Meta:
 		ordering = ["alumno","pregunta"]
+		unique_together = ('alumno','pregunta')
 		verbose_name_plural = "Respuestas"
 
 class Configuracion(models.Model):

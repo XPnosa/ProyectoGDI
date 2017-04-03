@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+	<h2 class="sub-title">{% if alumno %}Evaluación inicial de {{ alumno.nombre }} {{ alumno.apellido1 }} {{ alumno.apellido2 }}{% else %}Oops...{% endif %}</h2>
+	<body>
+		<div id="suit-center">
+			{% if not user.is_authenticated or not user.is_staff %}
+				<div class="alert alert-block alert-error"><h4><a href="{% url 'index' %}" class="text-error">No deberías estar aquí...</a></h4></div>
+			{% else %}
+				<div class="cuetionario">
+					{% if alumno %}
+						<fieldset class="module aligned first ">
+							<table class="table-overview">
+									{% for respuesta in respuestas %}
+									<tr>
+										<th><label id="id_pregunta-{{ forloop.counter0 }}">{{ respuesta.pregunta.texto }}</label></th><td>{{ respuesta.texto }}</td>
+									</tr>
+									{% endfor %}
+								</table>
+							</form>
+						</fieldset>
+					{% else %}
+						<div class="alert alert-warn">No existen datos de <strong>evaluación inicial</strong> para este alumno</div>
+					{% endif %}
+					<div><button class="btn btn-high" onclick="{% if alumno.validado or not alumno %}location.href='{% url 'alumnos' %}'{% else %}location.href='{% url 'pendientes' %}'{% endif %}">Volver</button></div>
+				</div>
+			{% endif %}
+		</div>
+	</body>
+{% endblock %}

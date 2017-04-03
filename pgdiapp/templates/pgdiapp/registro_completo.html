@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+	<h2 class="sub-title">Registro completo</h2>
+	<div id="suit-center">
+		{% if not user.is_authenticated %}
+			<div class="alert alert-success">Has terminado tu registro en el grado de <strong>{{ alumno.grado }}</strong>. Tu nombre de login es: <strong>{{ alumno.user.username }}</strong></div>
+			<div class="alert alert-warn">Recuerda que no podrás loguearte hasta que un <strong>profesor</strong> valide tus datos</div><hr />
+		{% endif %}
+		<div><button class="btn btn-high" onclick="location.href='{% url 'index' %}'">Volver</button></div>
+	</div>
+{% endblock %}

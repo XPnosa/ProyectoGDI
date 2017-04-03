@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+	<h2 class="sub-title">Listado de alumnos de {{ grado }}</h2>
+	<div id="suit-center">
+		{% if not user.is_authenticated or not user.is_staff %}
+			<div class="alert alert-block alert-error"><h4><a href="{% url 'index' %}" class="text-error">No deberías estar aquí...</a></h4></div>
+		{% else %}
+		<div class="results">
+			<table id="result_list" class="table table-striped table-bordered table-hover table-alumnos">
+				<tr>
+					<th>Nombre de usuario</th>
+					<th>Nombre</th>
+					<th>Apellidos</th>
+					<th>Dni</th>
+					<th>Fecha de nacimiento</th>
+					<th>Correo electrónico</th>
+					<th>Telefono</th>
+					<th></th>
+				</tr>
+				{% for alumno in alumnos %}
+					<tr>
+						<td class="alumno-data">{{ alumno.0.1.uid.0 }}</td>
+						<td class="alumno-data">{{ alumno.0.1.givenName.0 }}</td>
+						<td class="alumno-data">{{ alumno.0.1.sn.0 }}</td>
+						<td class="alumno-data"><i>No disponible</i></td>
+						<td class="alumno-data"><i>No disponible</i></td>
+						<td class="alumno-data">{{ alumno.0.1.mail.0 }}</td>
+						<td class="alumno-data"><i>No disponible</i></td>
+						<td class="alumno-button"><button class="btn btn-high" onclick="location.href='{% url 'perfil' grado alumno.0.1.uid.0 %}'">Ver detalle</button></td>
+					</tr>
+				{% endfor %}
+			</table>
+			<div><button class="btn btn-high" onclick="location.href='{% url 'index' %}'">Volver</button></div>
+		</div>
+		{% endif %}
+	</div>
+{% endblock %}

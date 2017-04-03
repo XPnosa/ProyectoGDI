@@ -1,5 +1,5 @@
 input[type="text"], input[type="password"], input[type="datetime"], input[type="datetime-local"], input[type="date"], input[type="month"], input[type="time"], input[type="week"], input[type="number"], input[type="email"], input[type="url"], input[type="search"], input[type="tel"], input[type="color"], .uneditable-input {
-	height: 25px !important;
+	height: 28px !important;
 }
 select {
 	width: 200px !important;
@@ -42,4 +42,20 @@ td {
     position: relative;
     top: -5px;
     left: 30px;
+    width: 300px;
+}
+.table-alumnos {
+    width: auto !important;
+    font-size: 12px;
+}
+.alumno-data {
+    padding: 5px 10px !important;
+}
+.alumno-button {
+    padding: 0px !important;
+}
+#result_list > tbody > tr > th {
+    background-color: #ddd !important;
+    border-color: #ccc;
+    box-shadow: unset;
 }

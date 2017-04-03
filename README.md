@@ -6,6 +6,11 @@ ReadMe
 
 **Changelog**
 
+- v0.6:
+	- Modificada página de perfil del alumno
+	- Añadido listado de alumnos por grado
+	- Cambios menores en plantillas y css
+
 - v0.5:
 	- Añadida opción para activar/desactivar el registro de nuevos alumnos
 	- Añadida opción para activar/desactivar la elección de nombre usuario

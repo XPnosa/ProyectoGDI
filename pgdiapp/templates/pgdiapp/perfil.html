@@ -1,40 +1,54 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
-	<h2 class="sub-title">Perfil público de {{ alumno.nombre }} {{ alumno.apellido1 }} {{ alumno.apellido2 }} </h2>
+	<h2 class="sub-title">Perfil de {{ alumno.0.0.1.givenName.0 }} {{ alumno.0.0.1.sn.0 }}</h2>
 	<div id="suit-center">
-		{% if not alumno.validado %}
-			<div class="alert alert-success">Has terminado tu registro en el grado de <strong>{{ alumno.grado }}</strong>. Tu nombre de login es: <strong>{{ alumno.user.username }}</strong></div>
-			<div class="alert alert-warn">Recuerda que no podrás loguearte hasta que un <strong>profesor</strong> valide tus datos</div><hr />
-		{% endif %}
 		<table class="table-overview registro">
 			<tr>
-				<td><strong>Alumno: </strong></td><td class="data_profile">{{ alumno.nombre }} {{ alumno.apellido1 }} {{ alumno.apellido2 }}</td>
-				<td><strong>Grado: </strong></td><td colspan="3" class="data_profile">{{ grado.cod }}: {{ grado.nombre }}</td>
+				<td><strong>Alumno: </strong></td><td class="data_profile">{{ alumno.0.0.1.givenName.0 }} {{ alumno.0.0.1.sn.0 }}</td>
+				<td><strong>DNI: </strong></td><td class="data_profile"><i>No dispoible</i></td>
+				<td><strong>Grado: </strong></td><td class="data_profile">{{ grado }}</td>
 			</tr>
 			<tr>
 				<td><strong>e-Mail:</strong></td><td class="data_profile">
 					{% if user.is_authenticated and user.username == alumno.user.username or user.is_staff %}
-						{{ alumno.email }}
+						{{ alumno.0.0.1.mail.0 }} 
 					{% else %}
 						<i>Oculto</i>
 					{% endif %}
 				</td>
 				<td><strong>Teléfono:</strong></td><td class="data_profile">
 					{% if user.is_authenticated and user.username == alumno.user.username or user.is_staff %}
-						{{ alumno.telefono }}
+						<i>No dispoible</i>
 					{% else %}
 						<i>Oculto</i>
 					{% endif %}
 				</td>
 				<td><strong>Fecha de nacimiento:</strong></td><td class="data_profile">
 					{% if user.is_authenticated and user.username == alumno.user.username or user.is_staff %}
-						{{ alumno.fecha_nac }}
+						<i>No dispoible</i>
 					{% else %}
 						<i>Oculto</i>
 					{% endif %}
 				</td>
 			</tr>
+			{% if user.is_staff %}
+			<tr>
+				<td><strong>Nombre de login:</strong></td><td class="data_profile">{{ alumno.0.0.1.uid.0 }}</td>
+				<td><strong>Directorio de casa:</strong></td><td class="data_profile">{{ alumno.0.0.1.homeDirectory.0 }}</td>
+				<td><strong>Shell de entrada:</strong></td><td class="data_profile">{{ alumno.0.0.1.loginShell.0 }}</td>
+			</tr>
+			<tr>
+				<td><strong>UID:</strong></td><td class="data_profile">{{ alumno.0.0.1.uidNumber.0 }}</td>
+				<td><strong>GID:</strong></td><td class="data_profile">{{ alumno.0.0.1.gidNumber.0 }}</td>
+				<td><strong>Cuota:</strong></td><td class="data_profile"><i>No dispoible</i></td>
+			</tr>
+			{% endif %}
 		</table>
+		{% if user.is_staff %}
+			<div><button class="btn btn-high" onclick="location.href='{% url 'alumnos' %}'">Volver</button></div>
+		{% else %}
+			<div><button class="btn btn-high" onclick="location.href='{% url 'index' %}'">Volver</button></div>
+		{% endif %}
 	</div>
 {% endblock %}

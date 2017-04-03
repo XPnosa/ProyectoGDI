@@ -1,22 +1,15 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
-	<script lang='javascript'>
-		function default_mod() {
-			var grados = document.getElementById("id_grado").options
-			for (i = 0; i < grados.length; i++) {
-				if (grados[i].text == '{{ grado }}') document.getElementById("id_grado").selectedIndex = i;
-			}
-		}
-	</script>
-	<h2 class="sub-title">Login</h2>
-	<body onload="default_mod()">
+	<script lang='javascript'>function hh() document.getElementById("header").style.display='none'</script>
+	<body class="login" onload="hh();">
 		<div id="suit-center">
 			{% if user.is_authenticated %}
 				<div class="alert alert-block alert-error"><h4><a href="{% url 'index' %}" class="text-error">No deberías estar aquí...</a></h4></div>
 			{% else %}
-			<fieldset class="module aligned first ">
-				<form enctype="multipart/form-data" method="post">
+			<fieldset id="content-main" class="module aligned first">
+				<h1><i class="icon-lock icon-white"></i> PGDI</h1>
+				<form id="login-form" enctype="multipart/form-data" method="post">
 				{% csrf_token %}
 					<div class="form-row control-group">
 						<label for="id_username" class="control-label required">Nombre de usuario:</label> <input autofocus="" id="id_username" maxlength="254" name="username" required="" type="text">

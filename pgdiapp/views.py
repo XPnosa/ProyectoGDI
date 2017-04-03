@@ -5,14 +5,15 @@ from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.forms import formset_factory
+from django_auth_ldap.config import LDAPSearch, PosixGroupType
 
 from .forms import UserProfileForm, RespuestaForm
 from .models import *
 
 from datetime import datetime
+import ldap
 
 # Vistas
-
 def index(request):
 	openrg = Configuracion.objects.get(clave='openregister').valor
 	freeun = Configuracion.objects.get(clave='freeusername').valor
@@ -38,10 +39,24 @@ def funmod(request):
 	freeun.save()
 	return redirect('/app')
 
+# Listado de alumnos validados
+def alumnos(request):
+	try:
+		grupos = request.user.ldap_user.group_names
+	except:
+		return redirect('/app')
+	if 'ASIR' in grupos:
+		grado = 'ASIR'
+	elif 'DAM' in grupos:
+		grado = 'DAM'
+	elif 'SMR' in grupos:
+		grado = 'SMR'
+	alumnos = ldap_search('pgdi',ldap.VERSION3,"ou="+grado+",ou=alumnos,ou=usuarios,dc=pgdi,dc=inf",ldap.SCOPE_ONELEVEL,None,"(objectClass=*)")
+	return render(request, 'pgdiapp/alumnos.html', { 'alumnos': alumnos, 'grado':grado })
+
 # Entrada al perfil
-def perfil(request, user_name):
-	alumno = Perfil.objects.get(user__username=user_name)
-	grado = Grado.objects.get(cod=alumno.grado)
+def perfil(request, grado, usuario):
+	alumno = ldap_search('pgdi',ldap.VERSION3,"ou="+grado+",ou=alumnos,ou=usuarios,dc=pgdi,dc=inf",ldap.SCOPE_ONELEVEL,None,"(uid="+usuario+")")
 	return render(request, 'pgdiapp/perfil.html', { 'alumno': alumno, 'grado':grado })
 
 # Pre-registro de un nuevo alumno
@@ -80,7 +95,7 @@ def cuestionario(request, user_name):
 		if respuestas.is_valid():
 			for respuesta in respuestas:
 				respuesta.save()
-			return HttpResponseRedirect("/app/perfil/"+perfil.user.username)
+			return render(request, 'pgdiapp/registro_completo.html', { 'alumno': perfil })
 	else:
 		respuestas = RespuestaFormSet()
 	return render(request, 'pgdiapp/cuestionario.html', { 'alumno':perfil, 'preguntas':preguntas, 'respuestas':RespuestaFormSet, 'openrg':openrg })
@@ -107,6 +122,21 @@ def generar_username(nom, ap1, ap2):
 		ap2 = ap2.replace(' ', '')
 	return (nom+ap1[:2]+ap2[:2]).lower()
 
+# Busqueda de datos en ldap
+def ldap_search(server,version,baseDN,searchScope,retrieveAttributes,searchFilter):
+	l = ldap.open(server)
+	l.protocol_version = version
+	ldap_result_id = l.search(baseDN, searchScope, searchFilter, retrieveAttributes)
+	result_set = []
+	while True:
+		result_type, result_data = l.result(ldap_result_id, 0)
+		if (result_data == []):
+			break
+		else:
+			if result_type == ldap.RES_SEARCH_ENTRY:
+				result_set.append(result_data)
+	return result_set
+
 # Cambiar password (TODO)
 def pwmod(request):
 	return redirect('/app')
@@ -123,7 +153,7 @@ def login_view(request):
 				perfil = Perfil.objects.get(user__username=username)
 			except:
 				return redirect('/app')
-			return HttpResponseRedirect("/app/perfil/"+username)
+			return HttpResponseRedirect("/app/perfil/"+perfil.grado.cod+"/"+username)
 		else:
 			return redirect('/app/error')
 	else:

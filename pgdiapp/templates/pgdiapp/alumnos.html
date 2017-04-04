@@ -30,7 +30,7 @@
 							<th>Fecha de nacimiento</th>
 							<th>Correo electrónico</th>
 							<th>Telefono</th>
-							<th colspan="2"></th>
+							<th colspan="3"></th>
 						</tr>
 						{% for alumno in alumnos %}
 							<tr>
@@ -43,6 +43,7 @@
 								<td class="alumno-data">{{ alumno.0.1.telephoneNumber.0 }}</td>
 								<td class="alumno-button"><button class="btn btn-high" onclick="location.href='{% url 'perfil' grado alumno.0.1.uid.0 %}'">Ver detalle</button></td>
 								<td class="alumno-button"><button class="btn btn-high" onclick="location.href='{% url 'respuestas' grado alumno.0.1.uid.0 %}'">Evaluación inicial</button></td>
+								<td class="alumno-button"><button class="btn btn-high btn-info" onclick="location.href='{% url 'confirmar_baja' grado alumno.0.1.uid.0 %}'">Dar de baja</button></td>
 							</tr>
 						{% endfor %}
 					</table>

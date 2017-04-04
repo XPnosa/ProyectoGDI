@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+	<script lang='javascript'>
+		function default_mod() {
+			var grados = document.getElementById("id_grado").options
+			for (i = 0; i < grados.length; i++) {
+				if (grados[i].text == '{{ grado }}') document.getElementById("id_grado").selectedIndex = i;
+			}
+		}
+	</script>
+	<h2 class="sub-title">¿Has vuelto?</h2>
+	<body onload="default_mod()">
+		<div id="suit-center">
+			{% if user.is_authenticated or not openrg %}
+				<div class="alert alert-block alert-error"><h4><a href="{% url 'index' %}" class="text-error">No deberías estar aquí...</a></h4></div>
+			{% else %}
+			<div class="alert alert-info">
+				Parece que estas accediendo desde la ip <strong>{{ ip }}</strong>. 
+				{% if grado != 'desconocido' %}Seguramente seas alumno de <strong>{{ grado }}</strong>{% endif %}.
+			</div><hr />
+			<fieldset class="module aligned first ">
+				<form enctype="multipart/form-data" method="post">
+					{% csrf_token %}
+					{% if pform.errors %}
+						<h4>Se han producido los siguientes errores:</h4>
+							<div>
+								{{ pform.errors }}
+							</div>
+						<br />
+					{% endif %}
+					<table class="table-overview registro">
+						<tr>
+							<td><label for="id_username">Nombre de usuario:</label></td>
+							<td class="reg_input">
+								<select id="id_username" name="username" required="required">
+								{% for l_usuario in l_usuarios|dictsort:0 %}
+									<option value="{{ l_usuario.0.1.uid.0 }}">{{ l_usuario.0.1.givenName.0 }} {{ l_usuario.0.1.sn.0 }}</option>
+								{% endfor %}
+							</select>
+							</td>
+							<td><label for="id_grado">Grado:</label></td>
+							<td class="reg_input">
+							<select id="id_grado" name="grado" required="required">
+								{% for l_grado in l_grados %}
+									<option value="{{ l_grado }}"{% if l_grado == grado %}selected="selected"{% endif %}>{{ l_grado }}</option>
+								{% endfor %}
+							</select>
+							</td>
+						</tr>
+					</table>
+					<br />
+					<button class="btn btn-high btn-info" type="submit">Confirmar</button>
+				</form>
+			</fieldset>
+			{% endif %}
+		</div>
+	</body>
+{% endblock %}

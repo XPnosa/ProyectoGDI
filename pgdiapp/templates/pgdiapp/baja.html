@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+	<h2 class="sub-title">Baja confirmada</h2>
+	<div id="suit-center">
+		{% if user.is_staff %}<div class="alert alert-success">Se ha dado de baja al alumno</div><hr />{% endif %}
+		<div><button class="btn btn-high" onclick="location.href='{% url 'alumnos' %}'">Volver</button></div>
+	</div>
+{% endblock %}

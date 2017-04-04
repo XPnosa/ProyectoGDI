@@ -38,24 +38,24 @@ class Clase(models.Model):
 		verbose_name_plural = "Clases"
 
 class Perfil(models.Model):
-	user = models.ForeignKey(User, on_delete=models.CASCADE)
-	grado = models.ForeignKey(Grado, on_delete=models.CASCADE)
+	user = models.OneToOneField(User, unique=True, on_delete=models.CASCADE)
+	grado = models.ForeignKey(Grado, blank=False, null=True, on_delete=models.CASCADE)
+	passwd =  models.CharField(max_length=500, blank=False, null=True)
 	info = models.TextField(default=None, blank=True, null=True)
 	dni_regex = RegexValidator(regex=r'^[0-9]{8}[a-zA-Z]{1}$')
-	dni = models.CharField(max_length=9, validators=[dni_regex], unique=True, null=False)
-	nombre = models.CharField(max_length=50, null=False)
-	apellido1 = models.CharField(max_length=50, null=False)
-	apellido2 = models.CharField(max_length=50, null=False)
+	dni = models.CharField(max_length=9, validators=[dni_regex], unique=True, blank=False, null=True)
+	nombre = models.CharField(max_length=50, blank=False, null=True)
+	apellido1 = models.CharField(max_length=50, blank=False, null=True)
+	apellido2 = models.CharField(max_length=50, blank=False, null=True)
 	tel_regex = RegexValidator(regex=r'^\+?1?\d{9}$')
-	telefono = models.CharField(max_length=9, validators=[tel_regex], null=True)
-	email = models.EmailField(null=False)
-	fecha_nac = models.DateField(null=True)
+	telefono = models.CharField(max_length=9, validators=[tel_regex], blank=False, null=True)
+	email = models.EmailField(blank=False, null=True)
+	fecha_nac = models.DateField(blank=False, null=True)
 	validado = models.BooleanField(default=False)
 	def __str__(self):
 		return str(self.user.username)
 	class Meta:
 		ordering = ["user"]
-		unique_together = ('user','grado')
 		verbose_name_plural = "Perfiles"
 
 class Pregunta(models.Model):

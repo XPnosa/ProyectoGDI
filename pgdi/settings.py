@@ -59,6 +59,9 @@ AUTH_LDAP_USER_ATTR_MAP = {
     "email": "mail"
 }
 
+LDAP_VERSION = ldap.VERSION3
+LDAP_SERVER_NAME = "pgdi"
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -121,6 +124,14 @@ DATABASES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
+
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+    'django.contrib.auth.hashers.BCryptPasswordHasher',
+]
 
 AUTH_PASSWORD_VALIDATORS = [
     {

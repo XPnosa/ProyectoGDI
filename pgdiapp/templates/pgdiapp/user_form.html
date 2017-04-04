@@ -15,7 +15,11 @@
 			{% if user.is_authenticated or not openrg %}
 				<div class="alert alert-block alert-error"><h4><a href="{% url 'index' %}" class="text-error">No deberías estar aquí...</a></h4></div>
 			{% else %}
-			<div class="alert alert-info">Parece que estas accediendo desde la ip <strong>{{ ip }}</strong>. {% if grado != 'desconocido' %}Seguramente seas alumno de <strong>{{ grado }}</strong>{% endif %}</div><hr />
+			<div class="alert alert-info">
+				Parece que estas accediendo desde la ip <strong>{{ ip }}</strong>. 
+				{% if grado != 'desconocido' %}Seguramente seas alumno de <strong>{{ grado }}</strong>{% endif %}. 
+				Si eres un antiguo alumno haz click [ <a href="{% url 'regreso' %}"><strong>AQUÍ</strong></a> ]
+			</div><hr />
 			<fieldset class="module aligned first ">
 				<form enctype="multipart/form-data" method="post">
 					{% csrf_token %}

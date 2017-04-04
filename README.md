@@ -6,6 +6,11 @@ ReadMe
 
 **Changelog**
 
+- v0.8:
+	- Añadida interfaz para dar de baja a alumnos activos
+	- Añadida interfaz para descartar registros no activos
+	- Añadida interfaz para el registro de antiguos alumnos
+
 - v0.7:
 	- Añadida interfaz con la evaluación inicial del alumno
 	- Añadida interfaz para validar alumnos registrados

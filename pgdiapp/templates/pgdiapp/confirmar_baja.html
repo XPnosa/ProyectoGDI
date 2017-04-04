@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+	<h2 class="sub-title">Confirmar baja en <strong>{{ grado }}</strong></h2>
+	<div id="suit-center">
+		{% if user.is_staff %}<div class="alert alert-error">¿Seguro que quiere dar de baja al alumno <strong>{{ alumno.0.0.1.givenName.0 }} {{ alumno.0.0.1.sn.0 }}</strong> de este curso de <strong>{{ grado }}</strong>?</div><hr />{% endif %}
+		<div>
+			{% if user.is_staff %}<button class="btn btn-high btn-info" onclick="location.href='{% url 'baja' grado alumno.0.0.1.uid.0 %}'">Si, estoy seguro</button>{% endif %}
+			<button class="btn btn-high" onclick="location.href='{% url 'alumnos' %}'">Volver</button>
+		</div>
+	</div>
+{% endblock %}

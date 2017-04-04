@@ -6,13 +6,14 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 from django.contrib.auth.decorators import login_required
 from django.forms import formset_factory
 from django_auth_ldap.config import LDAPSearch, PosixGroupType
+from django.conf import settings
 
 from .forms import UserProfileForm, RespuestaForm
 from .models import *
 
 from datetime import datetime
 
-import ldap
+import ldap, copy, crypt, string, random
 import ldap.modlist as modlist
 
 # Vistas
@@ -78,12 +79,12 @@ def alumnos(request):
 					grado = g
 		except:
 			pass
-	alumnos = ldap_search('pgdi',ldap.VERSION3,"ou="+grado+",ou=alumnos,ou=usuarios,dc=pgdi,dc=inf",ldap.SCOPE_ONELEVEL,None,"(objectClass=*)")
+	alumnos = ldap_search("ou="+grado+",ou=alumnos,ou=usuarios,dc=pgdi,dc=inf",ldap.SCOPE_ONELEVEL,None,"(objectClass=*)")
 	return render(request, 'pgdiapp/alumnos.html', { 'alumnos': alumnos, 'grado':grado, 'l_grados':l_grados })
 
 # Entrada al perfil
 def perfil(request, grado, usuario):
-	alumno = ldap_search('pgdi',ldap.VERSION3,"ou=alumnos,ou=usuarios,dc=pgdi,dc=inf",ldap.SCOPE_SUBTREE,None,"(uid="+usuario+")")
+	alumno = ldap_search("ou=alumnos,ou=usuarios,dc=pgdi,dc=inf",ldap.SCOPE_SUBTREE,None,"(uid="+usuario+")")
 	return render(request, 'pgdiapp/perfil.html', { 'alumno': alumno, 'grado':grado })
 
 # Respuestas del cuestionario
@@ -104,6 +105,7 @@ def register(request):
 	freeun = Configuracion.objects.get(clave='freeusername').valor
 	openrg = Configuracion.objects.get(clave='openregister').valor
 	if request.method == 'POST':
+		myPass = encriptar(request.POST['password1'])
 		uform = UserCreationForm(request.POST)
 		pform = UserProfileForm(data = request.POST)
 		if uform.is_valid() and pform.is_valid():
@@ -113,12 +115,31 @@ def register(request):
 				user.username = generar_username(profile.nombre,profile.apellido1,profile.apellido2)
 			user.save()
 			profile.user = user
+			profile.passwd = myPass
 			profile.save()
 			return HttpResponseRedirect("/app/cuestionario/"+str(user.username))
 	else:
 		uform = UserCreationForm()
 		pform = UserProfileForm()
 	return render(request, 'pgdiapp/user_form.html', { 'uform': uform, 'pform': pform, 'grado':grado, 'ip':ip, 'freeun':freeun, 'openrg':openrg })
+
+# Pre-registro de un nuevo alumno
+def regreso(request):
+	ip = request.META['REMOTE_ADDR']
+	hora = datetime.now().strftime('%H')
+	grado = obtener_grado(ip, hora)
+	openrg = Configuracion.objects.get(clave='openregister').valor
+	l_usuarios = ldap_search("ou=exalumnos,ou=usuarios,dc=pgdi,dc=inf",ldap.SCOPE_ONELEVEL,None,"(objectClass=*)")
+	l_grados = Grado.objects.all()
+	if request.method == 'POST':
+		usuario = request.POST['username']
+		grado = request.POST['grado']
+		perfil = Perfil.objects.get(user__username=usuario)
+		objGrado = Grado.objects.get(cod=grado)
+		perfil.grado = objGrado
+		perfil.save()
+		return HttpResponseRedirect("/app/cuestionario/"+str(usuario))
+	return render(request, 'pgdiapp/old_user_form.html', { 'l_usuarios':l_usuarios, 'l_grados':l_grados, 'grado':grado, 'ip':ip, 'openrg':openrg })
 
 # Formularo de preguntas
 def cuestionario(request, user_name):
@@ -136,6 +157,11 @@ def cuestionario(request, user_name):
 	else:
 		respuestas = RespuestaFormSet()
 	return render(request, 'pgdiapp/cuestionario.html', { 'alumno':perfil, 'preguntas':preguntas, 'respuestas':RespuestaFormSet, 'openrg':openrg })
+
+# Funcion para encriptar
+def encriptar(plano):
+	encriptado = "{CRYPT}"+crypt.crypt(plano,'$6$'+"".join([random.choice(string.ascii_letters+string.digits) for _ in range(16)]))
+	return encriptado
 
 # Obtencion de la lista de grados del profesor
 def obtener_grados(grupos):
@@ -170,10 +196,18 @@ def generar_username(nom, ap1, ap2):
 		ap2 = ap2.replace(' ', '')
 	return (nom+ap1[:2]+ap2[:2]).lower()
 
+# Calculo de un nuevo uid/gid number
+def calcular_id(xid):
+	usuarios = ldap_search("ou=usuarios,dc=pgdi,dc=inf",ldap.SCOPE_SUBTREE,None,"(objectClass=person)")
+	ids = []
+	for u in usuarios:
+		ids.append(int(u[0][1][xid][0]))
+	return max(ids)+1
+
 # Busqueda de datos en ldap
-def ldap_search(server,version,baseDN,searchScope,retrieveAttributes,searchFilter):
-	l = ldap.open(server)
-	l.protocol_version = version
+def ldap_search(baseDN,searchScope,retrieveAttributes,searchFilter):
+	l = ldap.open(settings.LDAP_SERVER_NAME)
+	l.protocol_version = settings.LDAP_VERSION
 	ldap_result_id = l.search(baseDN, searchScope, searchFilter, retrieveAttributes)
 	result_set = []
 	while True:
@@ -188,31 +222,46 @@ def ldap_search(server,version,baseDN,searchScope,retrieveAttributes,searchFilte
 # Dar de alta un alumno
 def alta(request, grado, usuario):
 	alumno = Perfil.objects.get(user__username=usuario)
-	l = ldap.initialize("ldap://pgdi:389")
-	l.simple_bind_s("cn=admin,dc=pgdi,dc=inf","toor")
+	l = ldap.initialize(settings.AUTH_LDAP_SERVER_URI)
+	l.simple_bind_s(settings.AUTH_LDAP_BIND_DN,settings.AUTH_LDAP_BIND_PASSWORD)
 
-	# Crear usuario en ldap
-	attrs = {}
-	attrs['objectclass'] = ['posixAccount','inetOrgPerson','organizationalPerson','person','top']
-	attrs['cn'] = str(alumno.user.username)
-	attrs['uid'] = str(alumno.user.username)
-	attrs['givenName'] = str(alumno.nombre)
-	attrs['sn'] = str(alumno.apellido1+" "+alumno.apellido2)
-	attrs['mail'] = str(alumno.email)
-	attrs['telephoneNumber'] = str(alumno.telefono)
-	attrs['loginShell'] = '/bin/bash'
-	attrs['homeDirectory'] = str('/home/pub/'+alumno.user.username)
-	attrs['uidNumber'] = "-1"											# TODO
-	attrs['gidNumber'] = "-1"											# TODO
-	attrs['userPassword'] = str('{CRYPT}'+alumno.user.password)			# TODO
+	# Comprobar si es exalumno
+	es_exalumno = True
+	try:
+		ldap_search("cn="+usuario+",ou=exalumnos,ou=usuarios,dc=pgdi,dc=inf",ldap.SCOPE_BASE,None,"(objectClass=*)")
+	except:
+		es_exalumno = False
 
-	dn="cn="+usuario+",ou="+grado+",ou=alumnos,ou=usuarios,dc=pgdi,dc=inf" 
-	ldif = modlist.addModlist(attrs)
-	l.add_s(dn,ldif)
+	if es_exalumno:
+		# Mover desde exalumnos en ldap
+		l.rename_s("cn="+usuario+",ou=exalumnos,ou=usuarios,dc=pgdi,dc=inf", "cn="+usuario, "ou="+grado+",ou=alumnos,ou=usuarios,dc=pgdi,dc=inf")
+	else:
+		# Crear usuario en ldap
+		attrs = {}
+		attrs['objectclass'] = ['posixAccount','inetOrgPerson','organizationalPerson','person','top']
+		attrs['cn'] = str(alumno.user.username)
+		attrs['uid'] = str(alumno.user.username)
+		attrs['givenName'] = str(alumno.nombre)
+		attrs['sn'] = str(alumno.apellido1+" "+alumno.apellido2)
+		attrs['mail'] = str(alumno.email)
+		attrs['telephoneNumber'] = str(alumno.telefono)
+		attrs['loginShell'] = '/bin/bash'
+		attrs['homeDirectory'] = str('/home/pub/'+alumno.user.username)
+		attrs['uidNumber'] = str(calcular_id('uidNumber'))
+		attrs['gidNumber'] = str(calcular_id('gidNumber'))
+		attrs['userPassword'] = str(alumno.passwd)
 
-	# Crear grupos en ldap
+		dn="cn="+usuario+",ou="+grado+",ou=alumnos,ou=usuarios,dc=pgdi,dc=inf"
+		ldif = modlist.addModlist(attrs)
+		l.add_s(dn,ldif)
+
+	# Agregar a grupos en ldap
 	old = {}
 	new = {'memberUid':str(alumno.user.username)}
+
+	dn="cn=alumnos,ou=roles,ou=grupos,dc=pgdi,dc=inf" 
+	ldif = modlist.modifyModlist(old,new)
+	l.modify_s(dn,ldif)
 
 	dn="cn="+grado+",ou=grados,ou=grupos,dc=pgdi,dc=inf" 
 	ldif = modlist.modifyModlist(old,new)
@@ -222,17 +271,77 @@ def alta(request, grado, usuario):
 	ldif = modlist.modifyModlist(old,new)
 	l.modify_s(dn,ldif)
 
-	dn="cn=alumnos,ou=roles,ou=grupos,dc=pgdi,dc=inf" 
-	ldif = modlist.modifyModlist(old,new)
-	l.modify_s(dn,ldif)
-
 	l.unbind_s()
+
+	# Actualizar perfil temporal
 	alumno.validado = True
 	alumno.save()
 	return render(request, 'pgdiapp/alta.html', { 'alumno': alumno })
 
+# Dar de baja un alumno
+def confirmar_baja(request, grado, usuario):
+	alumno = ldap_search("ou=alumnos,ou=usuarios,dc=pgdi,dc=inf",ldap.SCOPE_SUBTREE,None,"(uid="+usuario+")")
+	return render(request, 'pgdiapp/confirmar_baja.html', { 'alumno': alumno, 'grado':grado })
+
+def baja(request, grado, usuario):
+	l = ldap.initialize(settings.AUTH_LDAP_SERVER_URI)
+	l.simple_bind_s(settings.AUTH_LDAP_BIND_DN,settings.AUTH_LDAP_BIND_PASSWORD)
+
+	# Mover a exalumnos en ldap
+	l.rename_s("cn="+usuario+",ou="+grado+",ou=alumnos,ou=usuarios,dc=pgdi,dc=inf", "cn="+usuario, "ou=exalumnos,ou=usuarios,dc=pgdi,dc=inf")
+
+	# Eliminar de grupos en ldap
+	dn="cn=alumnos,ou=roles,ou=grupos,dc=pgdi,dc=inf" 
+	old = ldap_search(dn,ldap.SCOPE_BASE,None,"(objectClass=*)")[0][0][1]
+	new = copy.deepcopy(old)
+	new['memberUid'].remove(usuario)
+	ldif = modlist.modifyModlist(old,new)
+	l.modify_s(dn,ldif)
+
+	dn="cn="+grado+",ou=grados,ou=grupos,dc=pgdi,dc=inf" 
+	old = ldap_search(dn,ldap.SCOPE_BASE,None,"(objectClass=*)")[0][0][1]
+	new = copy.deepcopy(old)
+	new['memberUid'].remove(usuario)
+	ldif = modlist.modifyModlist(old,new)
+	l.modify_s(dn,ldif)
+
+	dn="cn=activos,ou=roles,ou=grupos,dc=pgdi,dc=inf" 
+	old = ldap_search(dn,ldap.SCOPE_BASE,None,"(objectClass=*)")[0][0][1]
+	new = copy.deepcopy(old)
+	new['memberUid'].remove(usuario)
+	ldif = modlist.modifyModlist(old,new)
+	l.modify_s(dn,ldif)
+
+	l.unbind_s()
+
+	# Actualizar perfil temporal (si existe)
+	try:
+		exalumno = Perfil.objects.get(user__username=usuario)
+		respuestas = Respuesta.objects.filter(alumno=exalumno)
+		for respuesta in respuestas:
+			respuesta.delete()
+		exalumno.grado = None
+		exalumno.validado = False
+		exalumno.save()
+	except:
+		pass
+	return render(request, 'pgdiapp/baja.html')
+
+# Descartar alumnos pre-registrados
+def confirmar_descarte(request, grado, usuario):
+	return render(request, 'pgdiapp/confirmar_descarte.html', { 'alumno': usuario, 'grado':grado })
+
+def descarte(request, grado, usuario):
+	alumno = User.objects.get(username=usuario)
+	alumno.delete()
+	return render(request, 'pgdiapp/descarte.html', { 'alumno': usuario, 'grado':grado })
+
+# Dar de alta a un antiguo alumno
+def chgrado(request):
+	return redirect('/app')
+
 # Cambiar password (TODO)
-def pwmod(request):
+def chpasswd(request):
 	return redirect('/app')
 
 # Login

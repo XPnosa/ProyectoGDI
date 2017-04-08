@@ -37,8 +37,8 @@
 								<td class="alumno-data">{{ alumno.0.1.uid.0 }}</td>
 								<td class="alumno-data">{{ alumno.0.1.givenName.0 }}</td>
 								<td class="alumno-data">{{ alumno.0.1.sn.0 }}</td>
-								<td class="alumno-data"><i>No disponible</i></td>
-								<td class="alumno-data"><i>No disponible</i></td>
+								<td class="alumno-data">{{ alumno.0.1.dni.0|slice:":8" }}-{{ alumno.0.1.dni.0|slice:"8:" }}</td>
+								<td class="alumno-data">{{ alumno.0.1.fnac.0|slice:"6:8" }}-{{ alumno.0.1.fnac.0|slice:"4:6" }}-{{ alumno.0.1.fnac.0|slice:":4" }}</td>
 								<td class="alumno-data">{{ alumno.0.1.mail.0 }}</td>
 								<td class="alumno-data">{{ alumno.0.1.telephoneNumber.0 }}</td>
 								<td class="alumno-button"><button class="btn btn-high" onclick="location.href='{% url 'perfil' grado alumno.0.1.uid.0 %}'">Ver detalle</button></td>

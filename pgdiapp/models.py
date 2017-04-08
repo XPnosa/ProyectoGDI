@@ -72,7 +72,7 @@ class Cuestionario(models.Model):
 	def __str__(self):
 		return str(self.grado)+": "+str(self.pregunta)
 	class Meta:
-		ordering = ["grado",'pregunta']
+		ordering = ["grado","pregunta"]
 		unique_together = ('grado','pregunta')
 		verbose_name_plural = "Cuestionarios"
 
@@ -96,3 +96,12 @@ class Configuracion(models.Model):
 	class Meta:
 		ordering = ["clave"]
 		verbose_name_plural = "Configuraciones"
+
+class Grupo(models.Model):
+	dn = models.CharField(max_length=200, unique=True)
+	desc =models.CharField(max_length=300, null=False)
+	def __str__(self):
+		return str(self.desc)
+	class Meta:
+		ordering = ["desc"]
+		verbose_name_plural = "Grupos"

@@ -6,6 +6,11 @@ ReadMe
 
 **Changelog**
 
+- v0.9:
+	- Añadidos los atributos fnac y dni al backend ldap
+	- Mejorada la parametrización de atributos para ldap
+	- Correcciones en las vistas de alta, baja y registro
+
 - v0.8:
 	- Añadida interfaz para dar de baja a alumnos activos
 	- Añadida interfaz para descartar registros no activos
@@ -32,7 +37,7 @@ ReadMe
 - v0.3:
 	- Corregida la obtención de la ip del cliente
 	- Añadido el modelo Cuestionario
-	- Añadido el campo dni al modelo "Perfil
+	- Añadido el campo dni al modelo Perfil
 	- Modificados los modelos Pregunta y Respuesta
 	- Adaptadas las plantillas de registro y cuestionarios
 

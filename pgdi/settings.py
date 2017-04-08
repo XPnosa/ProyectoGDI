@@ -59,8 +59,19 @@ AUTH_LDAP_USER_ATTR_MAP = {
     "email": "mail"
 }
 
+# ldap for pgdi
+
 LDAP_VERSION = ldap.VERSION3
 LDAP_SERVER_NAME = "pgdi"
+
+LDAP_DOMAIN_BASE = "dc=pgdi,dc=inf"
+LDAP_USERS_BASE = "ou=usuarios," + LDAP_DOMAIN_BASE
+LDAP_STUDENTS_BASE = "ou=alumnos," + LDAP_USERS_BASE
+LDAP_TEACHERS_BASE = "ou=profesores," + LDAP_USERS_BASE
+LDAP_EXSTUDENTS_BASE = "ou=exalumnos," + LDAP_USERS_BASE
+LDAP_GROUPS_BASE = "ou=grupos," + LDAP_DOMAIN_BASE
+LDAP_ROLES_BASE = "ou=roles," + LDAP_GROUPS_BASE
+LDAP_GRADES_BASE = "ou=grados," + LDAP_GROUPS_BASE
 
 # Application definition
 

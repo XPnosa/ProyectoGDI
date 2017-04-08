@@ -12,7 +12,7 @@
 		{% endif %}
 		{% if not user.is_authenticated %}
 			<div>
-				{% if openrg %}<button class="btn btn-high btn-info" onclick="location.href='{% url 'register' %}'">Registrate ahora</button>{% endif %}
+				{% if openrg %}<button class="btn btn-high btn-info" onclick="location.href='{% url 'registro' %}'">Registrate ahora</button>{% endif %}
 				<button class="btn btn-high" onclick="location.href='{% url 'login_view' %}'">Acceso al sistema</button>
 			</div>
 		{% else %}

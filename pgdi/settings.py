@@ -73,6 +73,11 @@ LDAP_GROUPS_BASE = "ou=grupos," + LDAP_DOMAIN_BASE
 LDAP_ROLES_BASE = "ou=roles," + LDAP_GROUPS_BASE
 LDAP_GRADES_BASE = "ou=grados," + LDAP_GROUPS_BASE
 
+# PGDI
+
+LOGIN_SHELL = '/bin/bash'
+HOME_DIRECTORY = '/home/pub/'
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -117,21 +122,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'pgdi.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
 DATABASES = {
-	'default': {
-		'ENGINE': 'django.db.backends.postgresql_psycopg2',
-		'NAME': 'pgdi',
-		'USER': 'pgdiuser',
-		'PASSWORD': 'pgdipass',
-		'HOST': 'pgdi',
-		'PORT': '5432',
-	}
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'pgdi',
+        'USER': 'pgdiuser',
+        'PASSWORD': 'pgdipass',
+        'HOST': 'pgdi',
+        'PORT': '5432',
+    }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
@@ -185,4 +188,3 @@ SHELL_PLUS = "ipython"
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
-

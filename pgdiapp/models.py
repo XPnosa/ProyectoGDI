@@ -41,7 +41,6 @@ class Perfil(models.Model):
 	user = models.OneToOneField(User, unique=True, on_delete=models.CASCADE)
 	grado = models.ForeignKey(Grado, blank=False, null=True, on_delete=models.CASCADE)
 	passwd =  models.CharField(max_length=500, blank=False, null=True)
-	info = models.TextField(default=None, blank=True, null=True)
 	dni_regex = RegexValidator(regex=r'^[0-9]{8}[a-zA-Z]{1}$')
 	dni = models.CharField(max_length=9, validators=[dni_regex], unique=True, blank=False, null=True)
 	nombre = models.CharField(max_length=50, blank=False, null=True)
@@ -51,6 +50,13 @@ class Perfil(models.Model):
 	telefono = models.CharField(max_length=9, validators=[tel_regex], blank=False, null=True)
 	email = models.EmailField(blank=False, null=True)
 	fecha_nac = models.DateField(blank=False, null=True)
+	cp_regex = RegexValidator(regex=r'^[0-9]{5}$')
+	cp = models.CharField(max_length=5, validators=[cp_regex], null=True)
+	direccion = models.CharField(max_length=100, null=True)
+	localidad = models.CharField(max_length=50, null=True)
+	provincia = models.CharField(max_length=50, null=True)
+	comunidad = models.CharField(max_length=50, null=True)
+	pais = models.CharField(max_length=50, null=True)
 	validado = models.BooleanField(default=False)
 	def __str__(self):
 		return str(self.user.username)
@@ -87,6 +93,17 @@ class Respuesta(models.Model):
 		unique_together = ('alumno','pregunta')
 		verbose_name_plural = "Respuestas"
 
+class Grupo(models.Model):
+	grado = models.ForeignKey(Grado, blank=False, null=False, on_delete=models.CASCADE)
+	dn = models.CharField(max_length=200, null=False)
+	desc =models.CharField(max_length=300, null=False)
+	def __str__(self):
+		return str(self.desc)
+	class Meta:
+		ordering = ["grado","desc"]
+		unique_together = ('grado','dn')
+		verbose_name_plural = "Grupos"
+
 class Configuracion(models.Model):
 	clave = models.CharField(max_length=100, unique=True)
 	info = models.TextField(default=None, blank=True, null=True)
@@ -97,11 +114,4 @@ class Configuracion(models.Model):
 		ordering = ["clave"]
 		verbose_name_plural = "Configuraciones"
 
-class Grupo(models.Model):
-	dn = models.CharField(max_length=200, unique=True)
-	desc =models.CharField(max_length=300, null=False)
-	def __str__(self):
-		return str(self.desc)
-	class Meta:
-		ordering = ["desc"]
-		verbose_name_plural = "Grupos"
+

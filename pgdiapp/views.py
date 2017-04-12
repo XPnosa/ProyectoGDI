@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect, render_to_response 
 from django.http import HttpResponse, HttpResponseRedirect, HttpRequest
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
@@ -8,7 +7,7 @@ from django.forms import formset_factory
 from django_auth_ldap.config import LDAPSearch, PosixGroupType
 from django.conf import settings
 
-from .forms import UserProfileForm, RespuestaForm
+from .forms import UserProfileForm, UserProfileMiniForm, RespuestaForm
 from .models import *
 
 from datetime import datetime
@@ -87,6 +86,49 @@ def perfil(request, grado, usuario):
 	alumno = ldap_search(settings.LDAP_STUDENTS_BASE,ldap.SCOPE_SUBTREE,None,"(uid="+usuario+")")
 	return render(request, 'pgdiapp/perfil.html', { 'alumno': alumno, 'grado':grado })
 
+# Edicion de perfil
+def editar(request, grado, usuario):
+	alumno = ldap_search(settings.LDAP_STUDENTS_BASE,ldap.SCOPE_SUBTREE,None,"(uid="+usuario+")")
+	if request.method == 'POST':
+		pform = UserProfileMiniForm(data = request.POST)
+		if pform.is_valid():
+			perfil = Perfil.objects.get(user__username=usuario)
+			perfil.telefono = request.POST['telefono']
+			perfil.email = request.POST['email']
+			perfil.cp = request.POST['cp']
+			perfil.direccion = request.POST['direccion']
+			perfil.localidad = request.POST['localidad']
+			perfil.provincia = request.POST['provincia']
+			perfil.comunidad = request.POST['comunidad']
+			perfil.pais = request.POST['pais']
+			# Sincronizar con ldap
+			sincronizar(usuario,grado,perfil.telefono,perfil.email,perfil.cp,perfil.direccion,perfil.localidad,perfil.provincia,perfil.comunidad,perfil.pais)
+			# Actualizar el modelo
+			perfil.save()
+			return HttpResponseRedirect("/app/perfil/"+grado+"/"+usuario)
+	else:
+		pform = UserProfileMiniForm()
+	return render(request, 'pgdiapp/edicion_perfil.html', { 'alumno': alumno, 'grado':grado, 'pform':pform })
+
+# Sincronizar perfil en ldap
+def sincronizar(alumno,grado,telefono,email,cp,direccion,localidad,provincia,comunidad,pais):
+	l = ldap.initialize(settings.AUTH_LDAP_SERVER_URI)
+	l.simple_bind_s(settings.AUTH_LDAP_BIND_DN,settings.AUTH_LDAP_BIND_PASSWORD)
+	dn="cn="+alumno+",ou="+grado+","+settings.LDAP_STUDENTS_BASE
+	old = ldap_search(dn,ldap.SCOPE_BASE,None,"(cn="+alumno+")")[0][0][1]
+	new = copy.deepcopy(old)
+	new['telephoneNumber'] = telefono.encode('utf-8')
+	new['mail'] = email.encode('utf-8')
+	new['postalCode'] = cp.encode('utf-8')
+	new['street'] = direccion.encode('utf-8')
+	new['l'] = localidad.encode('utf-8')
+	new['st'] = provincia.encode('utf-8')
+	new['c'] = comunidad.encode('utf-8')
+	new['co'] = pais.encode('utf-8')
+	ldif = modlist.modifyModlist(old,new)
+	l.modify_s(dn,ldif)
+	l.unbind_s()
+
 # Respuestas del cuestionario
 def respuestas(request, grado, usuario):
 	try:
@@ -115,6 +157,7 @@ def registro(request):
 				user.username = generar_username(profile.nombre,profile.apellido1,profile.apellido2)
 			user.save()
 			profile.user = user
+			profile.dni = profile.dni.upper()
 			profile.passwd = myPass
 			profile.save()
 			return HttpResponseRedirect("/app/cuestionario/"+str(user.username))
@@ -126,20 +169,29 @@ def registro(request):
 # Pre-registro de un nuevo alumno
 def regreso(request):
 	ip = request.META['REMOTE_ADDR']
+	dni = None
 	hora = datetime.now().strftime('%H')
 	grado = obtener_grado(ip, hora)
 	openrg = Configuracion.objects.get(clave='openregister').valor
-	l_usuarios = ldap_search(settings.LDAP_EXSTUDENTS_BASE,ldap.SCOPE_ONELEVEL,None,"(objectClass=posixAccount)")
+	usuario = None
 	l_grados = Grado.objects.all()
 	if request.method == 'POST':
-		usuario = request.POST['username']
-		grado = request.POST['grado']
-		perfil = Perfil.objects.get(user__username=usuario)
-		objGrado = Grado.objects.get(cod=grado)
-		perfil.grado = objGrado
-		perfil.save()
-		return HttpResponseRedirect("/app/cuestionario/"+str(usuario))
-	return render(request, 'pgdiapp/old_user_form.html', { 'l_usuarios':l_usuarios, 'l_grados':l_grados, 'grado':grado, 'ip':ip, 'openrg':openrg })
+		if request.POST['dni'] and request.POST['grado']:
+			l_usuarios = ldap_search(settings.LDAP_EXSTUDENTS_BASE,ldap.SCOPE_ONELEVEL,None,"(dni="+request.POST['dni']+")")
+			if len(l_usuarios) == 1:
+				usuario = l_usuarios[0][0][1]['uid'][0]
+				grado = request.POST['grado']
+				perfil = Perfil.objects.get(user__username=usuario)
+				objGrado = Grado.objects.get(cod=grado)
+				if not perfil.grado:
+					perfil.grado = objGrado
+					perfil.save()
+					return HttpResponseRedirect("/app/cuestionario/"+str(usuario))
+				else:
+					return HttpResponseRedirect("/app/noencontrado")
+			else:
+				return HttpResponseRedirect("/app/noencontrado")
+	return render(request, 'pgdiapp/old_user_form.html', { 'dni':dni, 'l_grados':l_grados, 'grado':grado, 'ip':ip, 'openrg':openrg })
 
 # Formularo de preguntas
 def cuestionario(request, user_name):
@@ -148,6 +200,8 @@ def cuestionario(request, user_name):
 	preguntas = Cuestionario.objects.filter(grado=perfil.grado)
 	RespuestaFormSet = formset_factory(RespuestaForm, extra=len(preguntas))
 	openrg = Configuracion.objects.get(clave='openregister').valor
+	if len(Respuesta.objects.filter(alumno=perfil)) > 0:
+		openrg = False
 	if request.method == 'POST':
 		respuestas = RespuestaFormSet(request.POST)
 		if respuestas.is_valid():
@@ -237,20 +291,26 @@ def alta(request, grado, usuario):
 	else:
 		# Crear usuario en ldap
 		attrs = {}
-		attrs['objectclass'] = ['posixAccount','inetOrgPerson','organizationalPerson','person','pgdi','top']
+		attrs['objectclass'] = ['posixAccount','inetOrgPerson','person','extensibleObject','pgdi','top']
 		attrs['cn'] = str(alumno.user.username)
 		attrs['uid'] = str(alumno.user.username)
-		attrs['givenName'] = str(alumno.nombre)
-		attrs['sn'] = str(alumno.apellido1+" "+alumno.apellido2)
-		attrs['mail'] = str(alumno.email)
+		attrs['givenName'] = alumno.nombre.encode('utf-8')
+		attrs['sn'] = (alumno.apellido1+" "+alumno.apellido2).encode('utf-8')
+		attrs['mail'] = alumno.email.encode('utf-8')
 		attrs['telephoneNumber'] = str(alumno.telefono)
 		attrs['fnac'] = str(alumno.fecha_nac).replace('-','')+'000000Z'
 		attrs['dni'] = str(alumno.dni)
-		attrs['loginShell'] = '/bin/bash'
-		attrs['homeDirectory'] = str('/home/pub/'+alumno.user.username)
+		attrs['postalCode'] = str(alumno.cp)
+		attrs['street'] = alumno.direccion.encode('utf-8')
+		attrs['l'] = alumno.localidad.encode('utf-8')
+		attrs['st'] = alumno.provincia.encode('utf-8')
+		attrs['c'] = alumno.comunidad.encode('utf-8')
+		attrs['co'] = alumno.pais.encode('utf-8')
+		attrs['loginShell'] = str(settings.LOGIN_SHELL)
+		attrs['homeDirectory'] = str(settings.HOME_DIRECTORY+alumno.user.username)
 		attrs['uidNumber'] = str(calcular_id('uidNumber'))
 		attrs['gidNumber'] = str(calcular_id('gidNumber'))
-		attrs['userPassword'] = str(alumno.passwd)
+		attrs['userPassword'] = alumno.passwd.encode('utf-8')
 
 		dn="cn="+usuario+",ou="+grado+","+settings.LDAP_STUDENTS_BASE
 		ldif = modlist.addModlist(attrs)
@@ -272,7 +332,7 @@ def alta(request, grado, usuario):
 	ldif = modlist.modifyModlist(old,new)
 	l.modify_s(dn,ldif)
 
-	for grp in Grupo.objects.all():
+	for grp in Grupo.objects.filter(grado__cod=grado):
 		try:
 			dn=grp.dn
 			ldif = modlist.modifyModlist(old,new)
@@ -321,7 +381,7 @@ def baja(request, grado, usuario):
 	ldif = modlist.modifyModlist(old,new)
 	l.modify_s(dn,ldif)
 
-	for grp in Grupo.objects.all():
+	for grp in Grupo.objects.filter(grado__cod=grado):
 		try:
 			dn=grp.dn
 			old = ldap_search(dn,ldap.SCOPE_BASE,None,"(objectClass=posixGroup)")[0][0][1]
@@ -351,21 +411,16 @@ def confirmar_descarte(request, grado, usuario):
 def descarte(request, grado, usuario):
 	alumno = User.objects.get(username=usuario)
 	if es_exalumno(usuario):
-		alumno = Perfil.objects.get(user__username=usuario)
-		alumno.grado = None
-		alumno.save()
+		exalumno = Perfil.objects.get(user__username=usuario)
+		respuestas = Respuesta.objects.filter(alumno=exalumno)
+		for respuesta in respuestas:
+			respuesta.delete()
+		exalumno.grado = None
+		exalumno.save()
 	else:
 		alumno = User.objects.get(username=usuario)
 		alumno.delete()
 	return render(request, 'pgdiapp/descarte.html', { 'alumno': usuario, 'grado':grado })
-
-# Dar de alta a un antiguo alumno
-def chgrado(request):
-	return redirect('/app')
-
-# Cambiar password (TODO)
-def chpasswd(request):
-	return redirect('/app')
 
 # Login
 def login_view(request):
@@ -385,8 +440,36 @@ def login_view(request):
 	else:
 		return render(request, 'pgdiapp/login.html')
 
-def error(request):
-	return render(request, 'pgdiapp/error.html')
+# Cambiar password
+def chpasswd(request):
+	if request.method == 'POST':
+		form = PasswordChangeForm(request.user, request.POST)
+		if form.is_valid():
+			user = form.save()
+			myPass = encriptar(request.POST['new_password1'])
+			profile = Perfil.objects.get(user=user)
+			sync_pass(profile.user.username,profile.grado.cod,profile.passwd,myPass)
+			profile.passwd = myPass
+			profile.save()
+			update_session_auth_hash(request, user)
+			logout(request)
+			return HttpResponseRedirect("/app/chpasswd_redirect")
+	else:
+		form = PasswordChangeForm(request.user)
+	return render(request, 'pgdiapp/pw_change.html', { 'form': form })
+
+def sync_pass(alumno,grado,old_pass,new_pass):
+	l = ldap.initialize(settings.AUTH_LDAP_SERVER_URI)
+	l.simple_bind_s(settings.AUTH_LDAP_BIND_DN,settings.AUTH_LDAP_BIND_PASSWORD)
+	dn="cn="+alumno+",ou="+grado+","+settings.LDAP_STUDENTS_BASE
+	old = {'userPassword':old_pass.encode('utf-8')}
+	new = {'userPassword':new_pass.encode('utf-8')}
+	ldif = modlist.modifyModlist(old,new)
+	l.modify_s(dn,ldif)
+	l.unbind_s()
+
+def chpasswdr(request):
+	return render(request, 'pgdiapp/password_ok.html')
 
 # Logout
 def logout_view(request):
@@ -395,3 +478,10 @@ def logout_view(request):
 
 def logoutr(request):
 	return render(request, 'pgdiapp/logout.html')
+
+# Vistas de error
+def error(request):
+	return render(request, 'pgdiapp/error.html')
+
+def noencontrado(request):
+	return render(request, 'pgdiapp/noencontrado.html')

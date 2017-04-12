@@ -26,7 +26,53 @@
 				</td>
 				<td><strong>Fecha de nacimiento:</strong></td><td class="data_profile">
 					{% if user.is_authenticated and user.username == alumno.0.0.1.uid.0 or user.is_staff %}
-						{{ alumno.0.0.1.fnac.0|slice:"6:8" }}-{{ alumno.0.0.1.fnac.0|slice:"4:6" }}-{{ alumno.0.0.1.fnac.0|slice:":4" }}
+						{{ alumno.0.0.1.fnac.0|slice:"6:8" }}/{{ alumno.0.0.1.fnac.0|slice:"4:6" }}/{{ alumno.0.0.1.fnac.0|slice:":4" }}
+					{% else %}
+						<i>Oculto</i>
+					{% endif %}
+				</td>
+			</tr>
+			<tr>
+				<td><strong>Código Postal:</strong></td><td class="data_profile">
+					{% if user.is_authenticated and user.username == alumno.0.0.1.uid.0 or user.is_staff %}
+						{{ alumno.0.0.1.postalCode.0 }} 
+					{% else %}
+						<i>Oculto</i>
+					{% endif %}
+				</td>
+				<td><strong>Dirección:</strong></td><td class="data_profile">
+					{% if user.is_authenticated and user.username == alumno.0.0.1.uid.0 or user.is_staff %}
+						{{ alumno.0.0.1.street.0 }}
+					{% else %}
+						<i>Oculto</i>
+					{% endif %}
+				</td>
+				<td><strong>Localidad:</strong></td><td class="data_profile">
+					{% if user.is_authenticated and user.username == alumno.0.0.1.uid.0 or user.is_staff %}
+						{{ alumno.0.0.1.l.0 }}
+					{% else %}
+						<i>Oculto</i>
+					{% endif %}
+				</td>
+			</tr>
+			<tr>
+				<td><strong>Provincia:</strong></td><td class="data_profile">
+					{% if user.is_authenticated and user.username == alumno.0.0.1.uid.0 or user.is_staff %}
+						{{ alumno.0.0.1.st.0 }} 
+					{% else %}
+						<i>Oculto</i>
+					{% endif %}
+				</td>
+				<td><strong>Comunidad:</strong></td><td class="data_profile">
+					{% if user.is_authenticated and user.username == alumno.0.0.1.uid.0 or user.is_staff %}
+						{{ alumno.0.0.1.c.0 }}
+					{% else %}
+						<i>Oculto</i>
+					{% endif %}
+				</td>
+				<td><strong>País:</strong></td><td class="data_profile">
+					{% if user.is_authenticated and user.username == alumno.0.0.1.uid.0 or user.is_staff %}
+						{{ alumno.0.0.1.co.0 }}
 					{% else %}
 						<i>Oculto</i>
 					{% endif %}
@@ -45,10 +91,15 @@
 			</tr>
 			{% endif %}
 		</table>
-		{% if user.is_staff %}
-			<div><button class="btn btn-high" onclick="location.href='{% url 'alumnos' %}'">Volver</button></div>
+		{% if user.is_authenticated and user.username == alumno.0.0.1.uid.0 or user.is_staff %}
+			<div><button class="btn btn-high btn-info" onclick="location.href='{% url 'editar' grado alumno.0.0.1.uid.0 %}'">Modificar datos</button>
 		{% else %}
-			<div><button class="btn btn-high" onclick="location.href='{% url 'index' %}'">Volver</button></div>
+			<div>
+		{% endif %}
+		{% if user.is_staff %}
+			<button class="btn btn-high" onclick="location.href='{% url 'alumnos' %}'">Volver</button></div>
+		{% else %}
+			<button class="btn btn-high" onclick="location.href='{% url 'index' %}'">Volver</button></div>
 		{% endif %}
 	</div>
 {% endblock %}

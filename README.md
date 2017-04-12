@@ -6,6 +6,12 @@ ReadMe
 
 **Changelog**
 
+- v1.0:
+	- Añadidos diversos atributos de dirección postal
+	- Añadida interfaz para modificar los datos de perfil
+	- Añadida interfaz para cambiar la contraseña del alumno
+	- Correcciones y cambios en url, modelo, vistas y plantillas
+
 - v0.9:
 	- Añadidos los atributos fnac y dni al backend ldap
 	- Mejorada la parametrización de atributos para ldap

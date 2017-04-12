@@ -24,7 +24,8 @@ td {
 	padding: 5px !important;
 	padding-left: 10px !important;
 }
-.registro > tbody > tr > td > input {
+.registro > tbody > tr > td > input,
+.registro > tbody > tr > td > select {
 	position: relative;
 	top: 3px;
 }
@@ -68,4 +69,20 @@ td {
 	top: 5px;
 	margin-right: 5px;
 	width: 100px !important;
+}
+#address {
+	width: 100%;
+}
+#localizar {
+	top: 0;
+}
+.oculto {
+	display: none !important;
+}
+#mapa {
+	width:98%;
+	height: 300px;
+	margin: 10px auto;
+	padding: 10px;
+	color: #1E1E1E;  
 }

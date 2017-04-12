@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+	<h2 class="sub-title">Edición de perfil</h2>
+	<body>
+		<div id="suit-center">
+		{% if user.is_authenticated and user.username == alumno.0.0.1.uid.0 or user.is_staff %}
+			<fieldset class="module aligned first" >
+				<form enctype="multipart/form-data" method="post">
+					{% csrf_token %}
+					{% if pform.errors %}
+						<h4>Se han producido los siguientes errores:</h4>
+							<div>
+								{{ pform.errors }}
+							</div>
+						<br />
+					{% endif %}
+					<table class="table-overview registro">
+						<tr>
+							<td><label for="id_username">Nombre de<br>usuario:</label></td><td class="reg_input"><input disabled="disabled" type="text" value="{{ alumno.0.0.1.uid.0 }}"></td>
+							<td><label for="id_email">e-Mail:</label></td><td class="reg_input"><input id="id_email" maxlength="254" name="email" required="" type="email" value="{{ alumno.0.0.1.mail.0 }}"></td>
+							<td><label for="id_telefono">Teléfono:</label></td><td class="reg_input"><input id="id_telefono" maxlength="9" name="telefono" required="" type="text" value="{{ alumno.0.0.1.telephoneNumber.0 }}"></td>
+						</tr>
+						<tr>
+							<td><label for="id_cp">Código<br>Postal:</label></td><td class="reg_input"><input id="id_cp" maxlength="5" name="cp" required="" type="text" value="{{ alumno.0.0.1.postalCode.0 }}"></td>
+							<td><label for="id_direccion">Dirección:</label></td><td class="reg_input"><input id="id_direccion" maxlength="100" name="direccion" required="" type="text" value="{{ alumno.0.0.1.street.0 }}"></td>
+							<td><label for="id_localidad">Localidad:</label></td><td class="reg_input"><input id="id_localidad" maxlength="50" name="localidad" required="" type="text" value="{{ alumno.0.0.1.l.0 }}"></td>
+						</tr>
+						<tr>
+							<td><label for="id_provincia">Provincia:</label></td><td class="reg_input"><input id="id_provincia" maxlength="50" name="provincia" required="" type="text" value="{{ alumno.0.0.1.st.0 }}"></td>
+							<td><label for="id_comunidad">Comunidad:</label></td><td class="reg_input"><input id="id_comunidad" maxlength="50" name="comunidad" required="" type="text" value="{{ alumno.0.0.1.c.0 }}"></td>
+							<td><label for="id_pais">País:</label></td><td class="reg_input"><input id="id_pais" maxlength="50" name="pais" required="" type="text" value="{{ alumno.0.0.1.co.0 }}"></td>
+						</tr>
+					</table>
+					<button class="btn btn-high btn-info" type="submit">Confirmar</button>
+					<input type="button" class="btn btn-high" value="Volver" onclick="location.href='{% url 'perfil' grado alumno.0.0.1.uid.0 %}'">
+				</form>
+			</fieldset>
+		{% else %}
+			<div class="alert alert-block alert-error"><h4><a href="{% url 'index' %}" class="text-error">No deberías estar aquí...</a></h4></div>
+		{% endif %}
+		</div>
+	</body>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+	<h2 class="sub-title">Cambio de Contraseña</h2>
+	<div id="suit-center">
+		{% if user.is_authenticated %}
+			{% if form.errors %}
+				<h4>Se han producido los siguientes errores:</h4>
+					<div>
+						{{ form.errors }}
+					</div>
+				<br />
+			{% endif %}
+			<br />
+			<form method="post">
+				{% csrf_token %}
+				<table class="table-overview registro">
+				<tr>
+					<td>{{ form.old_password.label_tag }}</td>
+					<td>{{ form.old_password }}</td>
+				</tr>
+				<tr>
+					<td>{{ form.new_password1.label_tag }}</td>
+					<td>{{ form.new_password1 }}</td>
+				</tr>
+				<tr>
+					<td>{{ form.new_password2.label_tag }}</td>
+					<td>{{ form.new_password2 }}</td>
+				</tr>
+				</table>
+				<br />
+					<input type="submit" class="btn btn-high btn-info" value="Cambiar contraseña" />
+					<input type="button" value="Volver" onclick="location.href='{% url 'index' %}'">
+			</form>
+		{% else %}
+			<div class="alert alert-block alert-error"><h4><a href="{% url 'index' %}" class="text-error">No deberías estar aquí...</a></h4></div>
+		{% endif %}
+	</body>
+{% endblock %}

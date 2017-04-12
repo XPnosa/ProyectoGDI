@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+	<h2 class="sub-title">No se ha encontrado ningún antiguo alumno con el DNI introducido</h2>
+	<div id="suit-center">
+		<div class="alert alert-warn">Comprueba que has introducido tu <strong>DNI</strong> correctamente. Si el problema continua avisa a tu <strong>profesor</strong>.</div><hr />
+		<div>
+			<button class="btn btn-high" onclick="location.href='{% url 'regreso' %}'">Volver</button>
+		</div>
+	</div>
+{% endblock %}

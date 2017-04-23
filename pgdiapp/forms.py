@@ -17,3 +17,6 @@ class RespuestaForm(forms.ModelForm):
 	class Meta:
 		model = Respuesta
 		fields = ["alumno","pregunta","texto"]
+
+class PhotoForm(forms.Form):
+	photo = forms.ImageField()

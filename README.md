@@ -6,6 +6,9 @@ ReadMe
 
 **Changelog**
 
+- v1.1:
+	- Añadidas interfaces para la foto de perfil del alumno
+	- Correcciones y cambios menores en plantillas y estilos
 - v1.0:
 	- Añadidos diversos atributos de dirección postal
 	- Añadida interfaz para modificar los datos de perfil

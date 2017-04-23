@@ -7,12 +7,12 @@ from django.forms import formset_factory
 from django_auth_ldap.config import LDAPSearch, PosixGroupType
 from django.conf import settings
 
-from .forms import UserProfileForm, UserProfileMiniForm, RespuestaForm
+from .forms import *
 from .models import *
 
 from datetime import datetime
 
-import ldap, copy, crypt, string, random, unicodedata
+import ldap, copy, crypt, string, random, unicodedata, base64
 import ldap.modlist as modlist
 
 # Vistas
@@ -84,6 +84,8 @@ def alumnos(request):
 # Entrada al perfil
 def perfil(request, grado, usuario):
 	alumno = ldap_search(settings.LDAP_STUDENTS_BASE,ldap.SCOPE_SUBTREE,None,"(uid="+usuario+")")
+	if 'jpegPhoto' in alumno[0][0][1]:
+		alumno[0][0][1]['jpegPhoto'][0] = base64.b64encode(bytes(alumno[0][0][1]['jpegPhoto'][0]))
 	return render(request, 'pgdiapp/perfil.html', { 'alumno': alumno, 'grado':grado })
 
 # Edicion de perfil
@@ -110,6 +112,26 @@ def editar(request, grado, usuario):
 		pform = UserProfileMiniForm()
 	return render(request, 'pgdiapp/edicion_perfil.html', { 'alumno': alumno, 'grado':grado, 'pform':pform })
 
+# Subir foto de perfil
+def subir_foto(request, grado, usuario):
+	if request.method == 'POST':
+		form = PhotoForm(request.POST, request.FILES)
+		if form.is_valid():
+			if validar_foto(request.FILES['photo']):
+				actualizar_foto(usuario, grado, request.FILES['photo'])
+				return HttpResponseRedirect("/app/perfil/"+grado+"/"+usuario)
+			else:
+				return HttpResponseRedirect("/app/formatonovalido")
+	else:
+		form = PhotoForm()
+	return render(request, 'pgdiapp/subir_foto.html', { 'alumno': usuario, 'grado':grado, 'form': form })
+
+# Validar foto de perfil
+def validar_foto(foto):
+	if foto.content_type == "image/jpeg" and foto.size <= 1024*1024:
+		return True
+	return False
+
 # Sincronizar perfil en ldap
 def sincronizar(alumno,grado,telefono,email,cp,direccion,localidad,provincia,comunidad,pais):
 	l = ldap.initialize(settings.AUTH_LDAP_SERVER_URI)
@@ -125,6 +147,18 @@ def sincronizar(alumno,grado,telefono,email,cp,direccion,localidad,provincia,com
 	new['st'] = provincia.encode('utf-8')
 	new['c'] = comunidad.encode('utf-8')
 	new['co'] = pais.encode('utf-8')
+	ldif = modlist.modifyModlist(old,new)
+	l.modify_s(dn,ldif)
+	l.unbind_s()
+
+# Actualizar foto de perfil en ldap
+def actualizar_foto(alumno,grado,foto):
+	l = ldap.initialize(settings.AUTH_LDAP_SERVER_URI)
+	l.simple_bind_s(settings.AUTH_LDAP_BIND_DN,settings.AUTH_LDAP_BIND_PASSWORD)
+	dn="cn="+alumno+",ou="+grado+","+settings.LDAP_STUDENTS_BASE
+	old = ldap_search(dn,ldap.SCOPE_BASE,None,"(cn="+alumno+")")[0][0][1]
+	new = copy.deepcopy(old)
+	new['jpegPhoto'] = foto.read()
 	ldif = modlist.modifyModlist(old,new)
 	l.modify_s(dn,ldif)
 	l.unbind_s()
@@ -485,3 +519,6 @@ def error(request):
 
 def noencontrado(request):
 	return render(request, 'pgdiapp/noencontrado.html')
+
+def formatonovalido(request):
+	return render(request, 'pgdiapp/formatonovalido.html')

@@ -43,8 +43,10 @@
 				{% if user.is_authenticated %}
 					Bienvenido/a, <strong>{{ user }}</strong>.
 					<span class="user-links">
-					<a href="{% url 'chpasswd' %}">Cambiar contraseña</a>
-					<span class="separator">|</span>
+					{% if not user.is_staff %}
+						<a href="{% url 'chpasswd' %}">Cambiar contraseña</a>
+						<span class="separator">|</span>
+					{% endif %}
 					<a href="{% url 'logout_view' %}">Terminar sesión</a>
 					</span>
 				{% else %}

@@ -3,7 +3,18 @@
 {% block content %}
 	<h2 class="sub-title">Perfil de {{ alumno.0.0.1.givenName.0 }} {{ alumno.0.0.1.sn.0 }}</h2>
 	<div id="suit-center">
-		<table class="table-overview registro">
+		<img class="photo-profile" 
+			{% if user.is_authenticated and user.username == alumno.0.0.1.uid.0 or user.is_staff %}
+				style="cursor:pointer" title="Cambiar Foto" onclick="location.href='{% url 'subir_foto' grado alumno.0.0.1.uid.0 %}'"
+			{% endif %}
+			src="
+			{% if alumno.0.0.1.jpegPhoto %}
+				data:image/jpeg;base64,{{ alumno.0.0.1.jpegPhoto.0 }}
+			{% else %}
+				{% static 'images/photo.jpg' %}
+			{% endif %}
+		"/>
+		<table style="float:left;" class="table-overview registro">
 			<tr>
 				<td><strong>Alumno: </strong></td><td class="data_profile">{{ alumno.0.0.1.givenName.0 }} {{ alumno.0.0.1.sn.0 }}</td>
 				<td><strong>DNI: </strong></td><td class="data_profile">{{ alumno.0.0.1.dni.0|slice:":8" }}-{{ alumno.0.0.1.dni.0|slice:"8:" }}</td>
@@ -91,6 +102,7 @@
 			</tr>
 			{% endif %}
 		</table>
+		<div style="clear:both;">
 		{% if user.is_authenticated and user.username == alumno.0.0.1.uid.0 or user.is_staff %}
 			<div><button class="btn btn-high btn-info" onclick="location.href='{% url 'editar' grado alumno.0.0.1.uid.0 %}'">Modificar datos</button>
 		{% else %}
@@ -101,5 +113,6 @@
 		{% else %}
 			<button class="btn btn-high" onclick="location.href='{% url 'index' %}'">Volver</button></div>
 		{% endif %}
+		</div>
 	</div>
 {% endblock %}

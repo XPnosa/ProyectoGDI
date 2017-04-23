@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+	<h2 class="sub-title">Subir foto de perfil</h2>
+	<div id="suit-center">
+		{% if user.is_authenticated and user.username == alumno or user.is_staff %}
+			{% if form.errors %}
+				<h4>Se han producido los siguientes errores:</h4>
+					<div>
+						{{ form.errors }}
+					</div>
+				<br />
+			{% endif %}
+			<br />
+			<form enctype="multipart/form-data" method="post">
+				{% csrf_token %}
+				{{ form }}
+				<br />
+					<input type="submit" class="btn btn-high btn-info" value="Subir Foto" />
+					<input type="button" value="Volver" onclick="location.href='{% url 'perfil' grado alumno %}'">
+			</form>
+		{% else %}
+			<div class="alert alert-block alert-error"><h4><a href="{% url 'index' %}" class="text-error">No deberías estar aquí...</a></h4></div>
+		{% endif %}
+	</body>
+{% endblock %}

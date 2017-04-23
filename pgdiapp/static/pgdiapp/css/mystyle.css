@@ -86,3 +86,9 @@ td {
 	padding: 10px;
 	color: #1E1E1E;  
 }
+.photo-profile {
+	height: 108px;
+	margin-left: 12px;
+	border: 1px solid #d9d9d9;
+	border-radius: 3px;
+}

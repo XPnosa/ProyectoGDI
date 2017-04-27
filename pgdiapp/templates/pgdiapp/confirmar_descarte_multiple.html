@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+	<h2 class="sub-title">Confirmar eliminacion de multiples registros</h2>
+	<div id="suit-center">
+		{% if user.is_staff %}
+			<div class="alert alert-error">¿Seguro que quiere descartar los siguientes registros?
+				<ul>
+					{% for alumno in alumnos %}
+						<li>{{ alumno.nombre }} {{ alumno.apellido1 }} {{ alumno.apellido2 }}</li>
+					{% endfor %}
+				</ul>
+			</div><hr />
+		{% endif %}
+		<div>
+			{% if user.is_staff %}
+			<form enctype="multipart/form-data" method="post">
+			{% csrf_token %}
+				<input type="hidden" name="l_grado" value="{{ grado }}" />
+				<input type="hidden" name="descartes" id="id_descartes" value="0" />
+				{% for alumno in alumnos %}
+					<input type="hidden" name="all_alumnos" value="{{ alumno.user.username }}" />
+				{% endfor %}
+				<button class="btn btn-high btn-info" onclick="document.getElementById('id_descartes').value='1'" type="submit">Si, estoy seguro</button>
+				<button class="btn btn-high" onclick="location.href='{% url 'pendientes' %}'">Volver</button>
+			</form>
+			{% endif %}
+		</div>
+	</div>
+{% endblock %}

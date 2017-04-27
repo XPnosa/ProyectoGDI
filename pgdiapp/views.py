@@ -48,8 +48,31 @@ def pendientes(request):
 	except:
 		return redirect('/app/login')
 	l_grados = obtener_grados(grupos)
-	if request.method == 'POST':
+	# Operaciones multiples
+	if request.method == 'POST' and 'l_grado' in request.POST:
 		grado = request.POST['l_grado']
+		# Confirmaciones
+		if 'actions' in request.POST and 'all_alumnos' in request.POST:
+			alumnos = request.POST.getlist('all_alumnos')
+			l_alumnos = []
+			for alumno in alumnos:
+				l_alumnos.append(Perfil.objects.get(grado__cod=grado,user__username=alumno,validado=False))
+			if request.POST['actions'] == 'alta_selected':
+				return render(request, 'pgdiapp/confirmar_alta_multiple.html', { 'alumnos': l_alumnos, 'grado':grado })
+			if request.POST['actions'] == 'descartar_selected':
+				return render(request, 'pgdiapp/confirmar_descarte_multiple.html', { 'alumnos': l_alumnos, 'grado':grado })
+		# Altas
+		if 'altas' in request.POST and int(request.POST['altas']) > 0:
+			alumnos = request.POST.getlist('all_alumnos')
+			for alumno in alumnos:
+				alta_efectiva(grado, alumno)
+			return render(request, 'pgdiapp/altas.html', { 'grado':grado })
+		# Descartes
+		if 'descartes' in request.POST and int(request.POST['descartes']) > 0:
+			alumnos = request.POST.getlist('all_alumnos')
+			for alumno in alumnos:
+				descarte_efectivo(grado, alumno)
+			return render(request, 'pgdiapp/descartes.html', { 'grado':grado })
 	else:
 		grado = l_grados[0]
 		try:
@@ -58,6 +81,7 @@ def pendientes(request):
 					grado = g
 		except:
 			pass
+	# Mostrar listado 
 	alumnos = Perfil.objects.filter(grado__cod=grado,validado=False)
 	return render(request, 'pgdiapp/pendientes.html', { 'alumnos': alumnos, 'grado':grado, 'l_grados':l_grados })
 
@@ -68,8 +92,23 @@ def alumnos(request):
 	except:
 		return redirect('/app/login')
 	l_grados = obtener_grados(grupos)
-	if request.method == 'POST':
+	# Operaciones multiples
+	if request.method == 'POST' and 'l_grado' in request.POST:
 		grado = request.POST['l_grado']
+		# Confirmaciones
+		if 'actions' in request.POST and 'all_alumnos' in request.POST:
+			alumnos = request.POST.getlist('all_alumnos')
+			l_alumnos = []
+			for alumno in alumnos:
+				l_alumnos.append(ldap_search(settings.LDAP_STUDENTS_BASE,ldap.SCOPE_SUBTREE,None,"(uid="+alumno+")"))
+			if request.POST['actions'] == 'baja_selected':
+				return render(request, 'pgdiapp/confirmar_baja_multiple.html', { 'alumnos': l_alumnos, 'grado':grado })
+		# Bajas
+		if 'bajas' in request.POST and int(request.POST['bajas']) > 0:
+			alumnos = request.POST.getlist('all_alumnos')
+			for alumno in alumnos:
+				baja_efectiva(grado, alumno)
+			return render(request, 'pgdiapp/bajas.html', { 'grado':grado })
 	else:
 		grado = l_grados[0]
 		try:
@@ -78,6 +117,7 @@ def alumnos(request):
 					grado = g
 		except:
 			pass
+	# Mostrar listado 
 	alumnos = ldap_search("ou="+grado+","+settings.LDAP_STUDENTS_BASE,ldap.SCOPE_ONELEVEL,None,"(objectClass=posixAccount)")
 	return render(request, 'pgdiapp/alumnos.html', { 'alumnos': alumnos, 'grado':grado, 'l_grados':l_grados })
 
@@ -315,6 +355,10 @@ def ldap_search(baseDN,searchScope,retrieveAttributes,searchFilter):
 
 # Dar de alta un alumno
 def alta(request, grado, usuario):
+	alumno = alta_efectiva(grado, usuario)
+	return render(request, 'pgdiapp/alta.html', { 'alumno': alumno })
+
+def alta_efectiva(grado, usuario):
 	alumno = Perfil.objects.get(user__username=usuario)
 	l = ldap.initialize(settings.AUTH_LDAP_SERVER_URI)
 	l.simple_bind_s(settings.AUTH_LDAP_BIND_DN,settings.AUTH_LDAP_BIND_PASSWORD)
@@ -379,14 +423,18 @@ def alta(request, grado, usuario):
 	# Actualizar perfil temporal
 	alumno.validado = True
 	alumno.save()
-	return render(request, 'pgdiapp/alta.html', { 'alumno': alumno })
+	return alumno
 
-# Dar de baja un alumno
+# Dar de baja alumnos
 def confirmar_baja(request, grado, usuario):
 	alumno = ldap_search(settings.LDAP_STUDENTS_BASE,ldap.SCOPE_SUBTREE,None,"(uid="+usuario+")")
 	return render(request, 'pgdiapp/confirmar_baja.html', { 'alumno': alumno, 'grado':grado })
 
 def baja(request, grado, usuario):
+	baja_efectiva(grado, usuario)
+	return render(request, 'pgdiapp/baja.html')
+
+def baja_efectiva(grado, usuario):
 	l = ldap.initialize(settings.AUTH_LDAP_SERVER_URI)
 	l.simple_bind_s(settings.AUTH_LDAP_BIND_DN,settings.AUTH_LDAP_BIND_PASSWORD)
 
@@ -436,13 +484,16 @@ def baja(request, grado, usuario):
 	exalumno.grado = None
 	exalumno.validado = False
 	exalumno.save()
-	return render(request, 'pgdiapp/baja.html')
 
 # Descartar alumnos pre-registrados
 def confirmar_descarte(request, grado, usuario):
 	return render(request, 'pgdiapp/confirmar_descarte.html', { 'alumno': usuario, 'grado':grado })
 
 def descarte(request, grado, usuario):
+	descarte_efectivo(grado, usuario)
+	return render(request, 'pgdiapp/descarte.html', { 'alumno': usuario, 'grado':grado })
+
+def descarte_efectivo(grado, usuario):
 	alumno = User.objects.get(username=usuario)
 	if es_exalumno(usuario):
 		exalumno = Perfil.objects.get(user__username=usuario)
@@ -454,7 +505,6 @@ def descarte(request, grado, usuario):
 	else:
 		alumno = User.objects.get(username=usuario)
 		alumno.delete()
-	return render(request, 'pgdiapp/descarte.html', { 'alumno': usuario, 'grado':grado })
 
 # Login
 def login_view(request):

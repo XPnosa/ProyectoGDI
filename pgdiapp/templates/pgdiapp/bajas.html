@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+	<h2 class="sub-title">Bajas confirmadas</h2>
+	<div id="suit-center">
+		<form enctype="multipart/form-data" method="post">
+			{% csrf_token %}
+			<input type="hidden" name="l_grado" value="{{ grado }}" />
+			{% if user.is_staff %}<div class="alert alert-success">Se ha dado de baja a los alumnos</div><hr />{% endif %}
+			<div><button type="submit" class="btn btn-high" onclick="location.href='{% url 'alumnos' %}'">Continuar</button></div>
+		</form>
+	</div>
+{% endblock %}

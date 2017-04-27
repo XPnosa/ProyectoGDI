@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+	<h2 class="sub-title">Confirmar baja en <strong>{{ grado }}</strong></h2>
+	<div id="suit-center">
+		{% if user.is_staff %}
+			<div class="alert alert-error">¿Seguro que quiere dar de baja a los siguientes alumnos de este curso de <strong>{{ grado }}</strong>?
+				<ul>
+					{% for alumno in alumnos %}
+						<li>{{ alumno.0.0.1.givenName.0 }} {{ alumno.0.0.1.sn.0 }}</li>
+					{% endfor %}
+				</ul>
+			</div><hr />
+		{% endif %}
+		<div>
+			{% if user.is_staff %}
+			<form enctype="multipart/form-data" method="post">
+			{% csrf_token %}
+				<input type="hidden" name="l_grado" value="{{ grado }}" />
+				<input type="hidden" name="bajas" id="id_bajas" value="0" />
+				{% for alumno in alumnos %}
+					<input type="hidden" name="all_alumnos" value="{{ alumno.0.0.1.uid.0 }}" />
+				{% endfor %}
+				<button class="btn btn-high btn-info" onclick="document.getElementById('id_bajas').value='1'" type="submit">Si, estoy seguro</button>
+				<button class="btn btn-high" onclick="location.href='{% url 'alumnos' %}'">Volver</button>
+			</form>
+			{% endif %}
+		</div>
+	</div>
+{% endblock %}

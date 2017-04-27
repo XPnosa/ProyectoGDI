@@ -4,6 +4,6 @@
 	<h2 class="sub-title">Registro eliminado</h2>
 	<div id="suit-center">
 		{% if user.is_staff %}<div class="alert alert-success">Se ha eliminado el registro</div><hr />{% endif %}
-		<div><button class="btn btn-high" onclick="location.href='{% url 'pendientes' %}'">Volver</button></div>
+		<div><button class="btn btn-high" onclick="location.href='{% url 'pendientes' %}'">Continuar</button></div>
 	</div>
 {% endblock %}

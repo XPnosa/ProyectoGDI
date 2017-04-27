@@ -52,6 +52,9 @@ td {
 .alumno-data {
 	padding: 5px 10px !important;
 }
+.alumno-check {
+	margin-left: 2px !important;
+}
 .alumno-button {
 	padding: 0px !important;
 	height: 100% !important;
@@ -86,9 +89,15 @@ td {
 	padding: 10px;
 	color: #1E1E1E;  
 }
+#ok_button {
+	position: relative;
+	top: -5px;
+	margin-left: 5px;
+}
 .photo-profile {
 	height: 108px;
 	margin-left: 12px;
 	border: 1px solid #d9d9d9;
 	border-radius: 3px;
 }
+

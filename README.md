@@ -6,9 +6,14 @@ ReadMe
 
 **Changelog**
 
+- v1.2:
+	- Modificados los listados para permitir operar sobre múltiples objetos
+	- Correcciones y cambios menores en modelo, plantillas y estilos
+
 - v1.1:
 	- Añadidas interfaces para la foto de perfil del alumno
 	- Correcciones y cambios menores en plantillas y estilos
+
 - v1.0:
 	- Añadidos diversos atributos de dirección postal
 	- Añadida interfaz para modificar los datos de perfil

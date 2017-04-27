@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+	<h2 class="sub-title">Registros descartados</h2>
+	<div id="suit-center">
+		<form enctype="multipart/form-data" method="post">
+			{% csrf_token %}
+			<input type="hidden" name="l_grado" value="{{ grado }}" />
+			{% if user.is_staff %}<div class="alert alert-success">Se han eliminado los registros</div><hr />{% endif %}
+			<div><button type="submit" class="btn btn-high" onclick="location.href='{% url 'pendientes' %}'">Continuar</button></div>
+		</form>
+	</div>
+{% endblock %}

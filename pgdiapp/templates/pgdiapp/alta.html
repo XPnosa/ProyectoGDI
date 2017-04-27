@@ -4,6 +4,6 @@
 	<h2 class="sub-title">Alta confirmada</h2>
 	<div id="suit-center">
 		{% if user.is_staff %}<div class="alert alert-success">Se ha dado de alta al alumno <strong>{{ alumno.nombre }} {{ alumno.apellido1 }} {{ alumno.apellido2 }}</strong> en el grado de <strong>{{ alumno.grado.cod }}</strong></div><hr />{% endif %}
-		<div><button class="btn btn-high" onclick="location.href='{% url 'pendientes' %}'">Volver</button></div>
+		<div><button class="btn btn-high" onclick="location.href='{% url 'pendientes' %}'">Continuar</button></div>
 	</div>
 {% endblock %}

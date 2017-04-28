@@ -21,7 +21,7 @@
 				{% for alumno in alumnos %}
 					<input type="hidden" name="all_alumnos" value="{{ alumno.user.username }}" />
 				{% endfor %}
-				<button class="btn btn-high btn-info" onclick="document.getElementById('id_descartes').value='1'" type="submit">Si, estoy seguro</button>
+				<button class="btn btn-high btn-danger" onclick="document.getElementById('id_descartes').value='1'" type="submit">Si, estoy seguro</button>
 				<button class="btn btn-high" onclick="location.href='{% url 'pendientes' %}'">Volver</button>
 			</form>
 			{% endif %}

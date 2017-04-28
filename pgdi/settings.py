@@ -73,10 +73,18 @@ LDAP_GROUPS_BASE = "ou=grupos," + LDAP_DOMAIN_BASE
 LDAP_ROLES_BASE = "ou=roles," + LDAP_GROUPS_BASE
 LDAP_GRADES_BASE = "ou=grados," + LDAP_GROUPS_BASE
 
+# smtp config
+
+SMTP_HOST = 'smtp.gmail.com'
+SMTP_USER = 'smtp.segundo.asir@gmail.com'
+SMTP_PASS = 'pass.segundo.asir'
+SMTP_NAME = 'Robot PGDI'
+
 # PGDI
 
 LOGIN_SHELL = '/bin/bash'
 HOME_DIRECTORY = '/home/pub/'
+MAX_STORAGE_QUOTA = '500m'
 
 # Application definition
 

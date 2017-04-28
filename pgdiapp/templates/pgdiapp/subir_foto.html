@@ -14,7 +14,10 @@
 			<br />
 			<form enctype="multipart/form-data" method="post">
 				{% csrf_token %}
-				{{ form }}
+				<label for="id_photo">
+					<div class="alert alert-info">Sólo se permiten imágenes en formato <strong>jpg</strong> y con un tamaño maximo de <strong>1MB</strong></div><hr />
+				</label>
+				{{ form.photo }}
 				<br />
 					<input type="submit" class="btn btn-high btn-info" value="Subir Foto" />
 					<input type="button" value="Volver" onclick="location.href='{% url 'perfil' grado alumno %}'">

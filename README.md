@@ -6,6 +6,12 @@ ReadMe
 
 **Changelog**
 
+- v1.3:
+	- Añadido datepicker widget para fechas
+	- Añadida función para el envío de emails
+	- Añadido el atributo quota al backend ldap
+	- Correcciones menores en vistas y plantillas
+
 - v1.2:
 	- Modificados los listados para permitir operar sobre múltiples objetos
 	- Correcciones y cambios menores en modelo, plantillas y estilos

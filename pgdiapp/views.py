@@ -7,12 +7,15 @@ from django.forms import formset_factory
 from django_auth_ldap.config import LDAPSearch, PosixGroupType
 from django.conf import settings
 
-from .forms import *
-from .models import *
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 from datetime import datetime
 
-import ldap, copy, crypt, string, random, unicodedata, base64
+from .forms import *
+from .models import *
+
+import ldap, copy, crypt, string, random, unicodedata, base64, smtplib
 import ldap.modlist as modlist
 
 # Vistas
@@ -123,14 +126,18 @@ def alumnos(request):
 
 # Entrada al perfil
 def perfil(request, grado, usuario):
-	alumno = ldap_search(settings.LDAP_STUDENTS_BASE,ldap.SCOPE_SUBTREE,None,"(uid="+usuario+")")
+	alumno = ldap_search("ou="+grado+","+settings.LDAP_STUDENTS_BASE,ldap.SCOPE_ONELEVEL,None,"(uid="+usuario+")")
+	if len(alumno) != 1:
+		return redirect('/app')
 	if 'jpegPhoto' in alumno[0][0][1]:
 		alumno[0][0][1]['jpegPhoto'][0] = base64.b64encode(bytes(alumno[0][0][1]['jpegPhoto'][0]))
 	return render(request, 'pgdiapp/perfil.html', { 'alumno': alumno, 'grado':grado })
 
 # Edicion de perfil
 def editar(request, grado, usuario):
-	alumno = ldap_search(settings.LDAP_STUDENTS_BASE,ldap.SCOPE_SUBTREE,None,"(uid="+usuario+")")
+	alumno = ldap_search("ou="+grado+","+settings.LDAP_STUDENTS_BASE,ldap.SCOPE_ONELEVEL,None,"(uid="+usuario+")")
+	if len(alumno) != 1:
+		return redirect('/app')
 	if request.method == 'POST':
 		pform = UserProfileMiniForm(data = request.POST)
 		if pform.is_valid():
@@ -353,7 +360,7 @@ def ldap_search(baseDN,searchScope,retrieveAttributes,searchFilter):
 				result_set.append(result_data)
 	return result_set
 
-# Dar de alta un alumno
+# Dar de alta alumnos
 def alta(request, grado, usuario):
 	alumno = alta_efectiva(grado, usuario)
 	return render(request, 'pgdiapp/alta.html', { 'alumno': alumno })
@@ -388,6 +395,7 @@ def alta_efectiva(grado, usuario):
 		attrs['homeDirectory'] = str(settings.HOME_DIRECTORY+alumno.user.username)
 		attrs['uidNumber'] = str(calcular_id('uidNumber'))
 		attrs['gidNumber'] = str(calcular_id('gidNumber'))
+		attrs['quota'] = str(settings.MAX_STORAGE_QUOTA)
 		attrs['userPassword'] = alumno.passwd.encode('utf-8')
 
 		dn="cn="+usuario+",ou="+grado+","+settings.LDAP_STUDENTS_BASE
@@ -423,6 +431,8 @@ def alta_efectiva(grado, usuario):
 	# Actualizar perfil temporal
 	alumno.validado = True
 	alumno.save()
+	# Enviar correo de bienvenida
+	correo_bienvenida(alumno.email,grado)
 	return alumno
 
 # Dar de baja alumnos
@@ -484,6 +494,8 @@ def baja_efectiva(grado, usuario):
 	exalumno.grado = None
 	exalumno.validado = False
 	exalumno.save()
+	# Enviar correo de despedida
+	correo_despedida(exalumno.email,grado)
 
 # Descartar alumnos pre-registrados
 def confirmar_descarte(request, grado, usuario):
@@ -505,6 +517,37 @@ def descarte_efectivo(grado, usuario):
 	else:
 		alumno = User.objects.get(username=usuario)
 		alumno.delete()
+
+# Envio de emails
+def enviar_correo(origen,destino,msg):
+	try:
+		server = smtplib.SMTP(settings.SMTP_HOST)
+		server.starttls()
+		server.login(settings.SMTP_USER,settings.SMTP_PASS)
+		server.sendmail(origen, destino, msg.as_string())
+		server.quit()
+	except:
+		pass
+
+def correo_bienvenida(destino, grado):
+	origen = settings.SMTP_NAME
+	msg = MIMEMultipart()
+	msg['To'] = destino
+	msg['From'] = origen
+	msg['Subject'] = 'Bienvenid@'
+	mensaje = 'Bienvenid@ al curso de ' + str(grado)
+	msg.attach(MIMEText(mensaje,'html'))
+	enviar_correo(origen,destino,msg)
+
+def correo_despedida(destino, grado):
+	origen = settings.SMTP_NAME
+	msg = MIMEMultipart()
+	msg['To'] = destino
+	msg['From'] = origen
+	msg['Subject'] = 'Aviso de baja'
+	mensaje = 'Tu usuario ha sido dado de baja del curso de ' + str(grado)
+	msg.attach(MIMEText(mensaje,'html'))
+	enviar_correo(origen,destino,msg)
 
 # Login
 def login_view(request):

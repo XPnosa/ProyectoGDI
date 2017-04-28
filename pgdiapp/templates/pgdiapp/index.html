@@ -4,16 +4,16 @@
 	<h2 class="sub-title">Gestión Departamento Informática</h2>
 	<div id="suit-center">
 		{% if user.is_superuser %}
-			<div class="alert {% if openrg %}alert-warn{% else %}alert-info{% endif %}">El registro de nuevos alumnos esta <strong>{% if openrg %}abierto{% else %}cerrado{% endif %}</strong><button class="top-button btn btn-high{% if not openrg %} btn-info{% endif %}" onclick="location.href='{% url 'regmod' %}'">{% if openrg %}Cerrar{% else %}Abrir{% endif %} el registro de nuevos alumnos</button></div>
+			<div class="alert {% if openrg %}alert-warn{% else %}alert-info{% endif %}">El registro de nuevos alumnos esta <strong>{% if openrg %}abierto{% else %}cerrado{% endif %}</strong><button class="top-button btn btn-high {% if not openrg %}btn-info{% else %}btn-warning{% endif %}" onclick="location.href='{% url 'regmod' %}'">{% if openrg %}Cerrar{% else %}Abrir{% endif %} el registro de nuevos alumnos</button></div>
 			{% if openrg %}
-				<div class="alert {% if freeun %}alert-warn{% else %}alert-info{% endif %}">La elección de nombre de usuario esta <strong>{% if freeun %}activada{% else %}desactivada{% endif %}</strong><button class="top-button btn btn-high{% if not freeun %} btn-info{% endif %}" onclick="location.href='{% url 'funmod' %}'">{% if freeun %}Desactivar{% else %}Activar{% endif %} la eleción del nombre de usuario</button></div>
+				<div class="alert {% if freeun %}alert-warn{% else %}alert-info{% endif %}">La elección de nombre de usuario esta <strong>{% if freeun %}activada{% else %}desactivada{% endif %}</strong><button class="top-button btn btn-high {% if not freeun %}btn-info{% else %}btn-warning{% endif %}" onclick="location.href='{% url 'funmod' %}'">{% if freeun %}Desactivar{% else %}Activar{% endif %} la eleción del nombre de usuario</button></div>
 			{% endif %}
 			<hr />
 		{% endif %}
 		{% if not user.is_authenticated %}
 			<div>
-				{% if openrg %}<button class="btn btn-high btn-info" onclick="location.href='{% url 'registro' %}'">Registrate ahora</button>{% endif %}
 				<button class="btn btn-high" onclick="location.href='{% url 'login_view' %}'">Acceso al sistema</button>
+				{% if openrg %}<button class="btn btn-high btn-warning" onclick="location.href='{% url 'registro' %}'">Registrate ahora</button>{% endif %}
 			</div>
 		{% else %}
 			{# user.ldap_user.dn #}

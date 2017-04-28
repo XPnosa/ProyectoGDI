@@ -5,7 +5,7 @@
 	<div id="suit-center">
 		{% if user.is_staff %}<div class="alert alert-error">¿Seguro que quiere descartar el registro de <strong>{{ alumno }}</strong>?</div><hr />{% endif %}
 		<div>
-			{% if user.is_staff %}<button class="btn btn-high btn-info" onclick="location.href='{% url 'descarte' grado alumno %}'">Si, estoy seguro</button>{% endif %}
+			{% if user.is_staff %}<button class="btn btn-high btn-danger" onclick="location.href='{% url 'descarte' grado alumno %}'">Si, estoy seguro</button>{% endif %}
 			<button class="btn btn-high" onclick="location.href='{% url 'pendientes' %}'">Volver</button>
 		</div>
 	</div>

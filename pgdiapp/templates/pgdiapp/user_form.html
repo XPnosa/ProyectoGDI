@@ -9,6 +9,31 @@
 			}
 		}
 	</script>
+	<script src="//cdn.jsdelivr.net/webshim/1.14.5/polyfiller.js"></script>
+	<script>
+		jQuery.swap = function( elem, options, callback, args ) {
+			var ret, name, old = {};
+			// Remember the old values, and insert the new ones
+			for ( name in options ) {
+				old[ name ] = elem.style[ name ];
+				elem.style[ name ] = options[ name ];
+			}
+			ret = callback.apply( elem, args || [] );
+			// Revert the old values
+			for ( name in options ) {
+				elem.style[ name ] = old[ name ];
+			}
+			return ret;
+		};
+		webshims.setOptions('forms-ext', {
+			types: 'date', 
+			"date": {
+					"startView": 0
+				}
+			}
+		);
+		webshims.polyfill('forms forms-ext');
+	</script>
 	<script type="text/javascript" src="https://maps.google.com/maps/api/js?key=AIzaSyAHJXeUeWW-dv3IMxOZVVuLRcMt62hO6Eg"></script>
 	<script lang='javascript'>
 	var map, geocoder;
@@ -134,7 +159,7 @@
 							<td><label for="id_telefono">Teléfono:</label></td><td class="reg_input">{{ pform.telefono }}</td>
 						</tr>
 						<tr>
-							<td><label for="id_fecha_nac">Fecha de<br>Nacimiento:</label></td><td class="reg_input"><input id="id_fecha_nac" placeholder="dd/mm/yyyy" name="fecha_nac" required="" type="text"></td>
+							<td><label for="id_fecha_nac">Fecha de<br>Nacimiento:</label></td><td class="reg_input"><input id="id_fecha_nac" placeholder="dd/mm/yyyy" name="fecha_nac" required="" type="date"></td>
 							<td><label for="id_contraseña1">Contraseña:</label></td><td class="reg_input">{{ uform.password1 }}</td>
 							<td><label for="id_contraseña2">Contraseña:</label></td><td class="reg_input">{{ uform.password2 }}</td>
 						</tr>

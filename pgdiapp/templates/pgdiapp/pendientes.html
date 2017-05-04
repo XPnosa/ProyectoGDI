@@ -53,9 +53,9 @@
 								<td class="alumno-data">{{ alumno.fecha_nac }}</td>
 								<td class="alumno-data">{{ alumno.email }}</td>
 								<td class="alumno-data">{{ alumno.telefono }}</td>
-								<td class="alumno-button"><button class="btn btn-high btn-info oculto" onclick="location.href='{% url 'alta' grado alumno.user.username %}'">Dar de alta</button></td>
-								<td class="alumno-button"><button class="btn btn-high" onclick="location.href='{% url 'respuestas' grado alumno.user.username %}'">Evaluación inicial</button></td>
-								<td class="alumno-button"><button class="btn btn-high btn-danger oculto" onclick="location.href='{% url 'confirmar_descarte' grado alumno.user.username %}'">Descartar</button></td>
+								<td class="alumno-button"><a href="{% url 'alta' grado alumno.user.username %}"><img title="Dar de alta" class="pgdi-icon" src="{% static 'images/alta.png' %}"/></a></td>
+								<td class="alumno-button"><a href="{% url 'respuestas' grado alumno.user.username %}"><img title="Evaluación inicial" class="pgdi-icon" src="{% static 'images/evaluacion_inicial.png' %}"/></a></td>
+								<td class="alumno-button"><a href="{% url 'confirmar_descarte' grado alumno.user.username %}"><img title="Descartar" class="pgdi-icon" src="{% static 'images/trash.png' %}"/></a></td>
 							</tr>
 						{% endfor %}
 					</table>

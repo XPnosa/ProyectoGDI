@@ -6,7 +6,7 @@
 		{% if user.is_superuser %}
 			<div class="alert {% if openrg %}alert-warn{% else %}alert-info{% endif %}">El registro de nuevos alumnos esta <strong>{% if openrg %}abierto{% else %}cerrado{% endif %}</strong><button class="top-button btn btn-high {% if not openrg %}btn-info{% else %}btn-warning{% endif %}" onclick="location.href='{% url 'regmod' %}'">{% if openrg %}Cerrar{% else %}Abrir{% endif %} el registro de nuevos alumnos</button></div>
 			{% if openrg %}
-				<div class="alert {% if freeun %}alert-warn{% else %}alert-info{% endif %}">La elección de nombre de usuario esta <strong>{% if freeun %}activada{% else %}desactivada{% endif %}</strong><button class="top-button btn btn-high {% if not freeun %}btn-info{% else %}btn-warning{% endif %}" onclick="location.href='{% url 'funmod' %}'">{% if freeun %}Desactivar{% else %}Activar{% endif %} la eleción del nombre de usuario</button></div>
+				<div class="alert {% if freeun %}alert-warn{% else %}alert-info{% endif %}">La elección de nombre de usuario esta <strong>{% if freeun %}activada{% else %}desactivada{% endif %}</strong><button class="top-button btn btn-high {% if not freeun %}btn-info{% else %}btn-warning{% endif %}" onclick="location.href='{% url 'funmod' %}'">{% if freeun %}Desactivar{% else %}Activar{% endif %} la elección del nombre de usuario</button></div>
 			{% endif %}
 			<hr />
 		{% endif %}

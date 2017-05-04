@@ -104,6 +104,16 @@ class Grupo(models.Model):
 		unique_together = ('grado','dn')
 		verbose_name_plural = "Grupos"
 
+class Mensaje(models.Model):
+	cod = models.CharField(max_length=10, unique=True)
+	asunto = models.CharField(max_length=100, null=False)
+	cuerpo = models.TextField(default=None, null=False)
+	def __str__(self):
+		return str(self.cod)
+	class Meta:
+		ordering = ["cod"]
+		verbose_name_plural = "Mensajes"
+
 class Configuracion(models.Model):
 	clave = models.CharField(max_length=100, unique=True)
 	info = models.TextField(default=None, blank=True, null=True)

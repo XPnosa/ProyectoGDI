@@ -108,3 +108,9 @@ td {
 .step-controls {
 	top: -2px;
 }
+.pgdi-icon {
+	width: 25px;
+	height: 25px;
+	cursor: pointer;
+	padding: 2px;
+}

@@ -14,9 +14,8 @@
 			<br />
 			<form enctype="multipart/form-data" method="post">
 				{% csrf_token %}
-				<label for="id_photo">
-					<div class="alert alert-info">Sólo se permiten imágenes en formato <strong>jpg</strong> y con un tamaño maximo de <strong>1MB</strong></div><hr />
-				</label>
+				<div class="alert alert-info">Sólo se permiten imágenes en formato <strong>jpg</strong> y con un tamaño maximo de <strong>1MB</strong></div><hr />
+				<label for="id_photo"></label>
 				{{ form.photo }}
 				<br />
 					<input type="submit" class="btn btn-high btn-info" value="Subir Foto" />

@@ -17,7 +17,7 @@
 		<table style="float:left;" class="table-overview registro">
 			<tr>
 				<td><strong>Alumno: </strong></td><td class="data_profile">{{ alumno.0.0.1.givenName.0 }} {{ alumno.0.0.1.sn.0 }}</td>
-				<td><strong>DNI: </strong></td><td class="data_profile">{{ alumno.0.0.1.dni.0|slice:":8" }}-{{ alumno.0.0.1.dni.0|slice:"8:" }}</td>
+				<td><strong>DNI: </strong></td><td class="data_profile">{% if user.is_authenticated and user.username == alumno.0.0.1.uid.0 or user.is_staff %}{{ alumno.0.0.1.dni.0|slice:":8" }}-{{ alumno.0.0.1.dni.0|slice:"8:" }}{% else %}<i>Oculto</i>{% endif %}</td>
 				<td><strong>Grado: </strong></td><td class="data_profile">{{ grado }}</td>
 			</tr>
 			<tr>

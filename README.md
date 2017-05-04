@@ -6,6 +6,9 @@ ReadMe
 
 **Changelog**
 
+- v1.4:
+	- Correcciones y cambios en modelo, vistas, plantillas y css
+
 - v1.3:
 	- Añadido datepicker widget para fechas
 	- Añadida función para el envío de emails

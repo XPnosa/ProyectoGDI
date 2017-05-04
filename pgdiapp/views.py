@@ -432,7 +432,7 @@ def alta_efectiva(grado, usuario):
 	alumno.validado = True
 	alumno.save()
 	# Enviar correo de bienvenida
-	correo_bienvenida(alumno.email,grado)
+	construir_correo(alumno,grado,'WELCOME')
 	return alumno
 
 # Dar de baja alumnos
@@ -495,7 +495,7 @@ def baja_efectiva(grado, usuario):
 	exalumno.validado = False
 	exalumno.save()
 	# Enviar correo de despedida
-	correo_despedida(exalumno.email,grado)
+	construir_correo(exalumno,grado,'BYEBYE')
 
 # Descartar alumnos pre-registrados
 def confirmar_descarte(request, grado, usuario):
@@ -519,6 +519,23 @@ def descarte_efectivo(grado, usuario):
 		alumno.delete()
 
 # Envio de emails
+def construir_correo(usuario, grado, tipo):
+	objMsg = Mensaje.objects.get(cod=tipo)
+	origen = settings.SMTP_NAME
+	destino = usuario.email
+	msg = MIMEMultipart()
+	msg['To'] = destino
+	msg['From'] = origen
+	msg['Subject'] = objMsg.asunto
+	mensaje = expandir_etiquetas(objMsg.cuerpo,usuario.user.username,grado)
+	msg.attach(MIMEText(mensaje,'html'))
+	enviar_correo(origen,destino,msg)
+
+def expandir_etiquetas(mensaje,usuario,grado):
+	mensaje = mensaje.replace('{{USUARIO}}',usuario)
+	mensaje = mensaje.replace('{{GRADO}}',grado)
+	return mensaje
+
 def enviar_correo(origen,destino,msg):
 	try:
 		server = smtplib.SMTP(settings.SMTP_HOST)
@@ -528,26 +545,6 @@ def enviar_correo(origen,destino,msg):
 		server.quit()
 	except:
 		pass
-
-def correo_bienvenida(destino, grado):
-	origen = settings.SMTP_NAME
-	msg = MIMEMultipart()
-	msg['To'] = destino
-	msg['From'] = origen
-	msg['Subject'] = 'Bienvenid@'
-	mensaje = 'Bienvenid@ al curso de ' + str(grado)
-	msg.attach(MIMEText(mensaje,'html'))
-	enviar_correo(origen,destino,msg)
-
-def correo_despedida(destino, grado):
-	origen = settings.SMTP_NAME
-	msg = MIMEMultipart()
-	msg['To'] = destino
-	msg['From'] = origen
-	msg['Subject'] = 'Aviso de baja'
-	mensaje = 'Tu usuario ha sido dado de baja del curso de ' + str(grado)
-	msg.attach(MIMEText(mensaje,'html'))
-	enviar_correo(origen,destino,msg)
 
 # Login
 def login_view(request):

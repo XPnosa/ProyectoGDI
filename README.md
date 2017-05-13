@@ -6,6 +6,9 @@ ReadMe
 
 **Changelog**
 
+- v1.5:
+	- Añadida función para la consulta del espacio disponible en disco
+
 - v1.4:
 	- Correcciones y cambios en modelo, vistas, plantillas y css
 

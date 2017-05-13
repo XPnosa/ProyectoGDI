@@ -15,7 +15,7 @@ from datetime import datetime
 from .forms import *
 from .models import *
 
-import ldap, copy, crypt, string, random, unicodedata, base64, smtplib
+import ldap, copy, crypt, string, random, unicodedata, base64, smtplib, os, subprocess
 import ldap.modlist as modlist
 
 # Vistas
@@ -129,9 +129,25 @@ def perfil(request, grado, usuario):
 	alumno = ldap_search("ou="+grado+","+settings.LDAP_STUDENTS_BASE,ldap.SCOPE_ONELEVEL,None,"(uid="+usuario+")")
 	if len(alumno) != 1:
 		return redirect('/app')
+	# Obtener foto
 	if 'jpegPhoto' in alumno[0][0][1]:
 		alumno[0][0][1]['jpegPhoto'][0] = base64.b64encode(bytes(alumno[0][0][1]['jpegPhoto'][0]))
-	return render(request, 'pgdiapp/perfil.html', { 'alumno': alumno, 'grado':grado })
+	# Obtener espacio en disco
+	u, error = consultar_cuota(4,usuario)
+	usado, error = consultar_cuota(4,usuario,'-s')
+	# Campo 4 -> disco utilizado
+	b, error = consultar_cuota(5,usuario)
+	blando, error = consultar_cuota(5,usuario,'-s')
+	# Campo 5 -> Limite blando
+	d, error = consultar_cuota(6,usuario)
+	duro, error = consultar_cuota(6,usuario,'-s')
+	# Campo 6 -> Limite duro
+	try:
+		p = float(u) / float(b) * float(100)
+	except:
+		p = 100
+	porcentaje = float("{0:.2f}".format(p))
+	return render(request, 'pgdiapp/perfil.html', { 'alumno': alumno, 'grado':grado, 'cuota':usado, 'blando':blando, 'duro':duro, 'porcentaje':porcentaje })
 
 # Edicion de perfil
 def editar(request, grado, usuario):
@@ -298,6 +314,19 @@ def encriptar(plano):
 	encriptado = "{CRYPT}"+crypt.crypt(plano,'$6$'+"".join([random.choice(string.ascii_letters+string.digits) for _ in range(16)]))
 	return encriptado
 
+# Consultar cuota de disco
+def consultar_cuota(campo,usuario,modo=""):
+	if campo in (4,5,6):
+		comando = 'repquota ' + modo + ' /home -O csv | grep ' + str(usuario) + ' | cut -d "," -f ' + str(campo)
+		proceso = subprocess.Popen(comando, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+		salida, error = proceso.communicate()
+		if error or not salida:
+			return (0, error)
+		else:
+			return (salida, error)
+	else:
+		return (None,"Campo no valido")
+
 # Obtencion de la lista de grados del profesor
 def obtener_grados(grupos):
 	l_grados = []
@@ -375,8 +404,9 @@ def alta_efectiva(grado, usuario):
 		l.rename_s("cn="+usuario+","+settings.LDAP_EXSTUDENTS_BASE, "cn="+usuario, "ou="+grado+","+settings.LDAP_STUDENTS_BASE)
 	else:
 		# Crear usuario en ldap
+		id_number = calcular_id('uidNumber')
 		attrs = {}
-		attrs['objectclass'] = ['posixAccount','inetOrgPerson','person','extensibleObject','pgdi','top']
+		attrs['objectclass'] = ['posixAccount','shadowAccount','inetOrgPerson','person','extensibleObject','pgdi','top']
 		attrs['cn'] = str(alumno.user.username)
 		attrs['uid'] = str(alumno.user.username)
 		attrs['givenName'] = alumno.nombre.encode('utf-8')
@@ -393,12 +423,22 @@ def alta_efectiva(grado, usuario):
 		attrs['co'] = alumno.pais.encode('utf-8')
 		attrs['loginShell'] = str(settings.LOGIN_SHELL)
 		attrs['homeDirectory'] = str(settings.HOME_DIRECTORY+alumno.user.username)
-		attrs['uidNumber'] = str(calcular_id('uidNumber'))
-		attrs['gidNumber'] = str(calcular_id('gidNumber'))
+		attrs['uidNumber'] = str(id_number)
+		attrs['gidNumber'] = str(id_number)
 		attrs['quota'] = str(settings.MAX_STORAGE_QUOTA)
 		attrs['userPassword'] = alumno.passwd.encode('utf-8')
 
 		dn="cn="+usuario+",ou="+grado+","+settings.LDAP_STUDENTS_BASE
+		ldif = modlist.addModlist(attrs)
+		l.add_s(dn,ldif)
+
+		# Crear grupo en ldap
+		attrs = {}
+		attrs['objectclass'] = ['posixGroup','top']
+		attrs['gidNumber'] = str(id_number)
+		attrs['memberUid'] = str(alumno.user.username)
+
+		dn="cn="+usuario+","+settings.LDAP_OS_BASE
 		ldif = modlist.addModlist(attrs)
 		l.add_s(dn,ldif)
 

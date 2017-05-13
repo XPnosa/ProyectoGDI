@@ -72,6 +72,7 @@ LDAP_EXSTUDENTS_BASE = "ou=exalumnos," + LDAP_USERS_BASE
 LDAP_GROUPS_BASE = "ou=grupos," + LDAP_DOMAIN_BASE
 LDAP_ROLES_BASE = "ou=roles," + LDAP_GROUPS_BASE
 LDAP_GRADES_BASE = "ou=grados," + LDAP_GROUPS_BASE
+LDAP_OS_BASE = "ou=so," + LDAP_GROUPS_BASE
 
 # smtp config
 

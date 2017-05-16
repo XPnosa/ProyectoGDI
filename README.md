@@ -6,6 +6,9 @@ ReadMe
 
 **Changelog**
 
+- v1.7:
+	- Correcciones y otras mejoras en la seguridad
+
 - v1.6:
 	- Añadidos mensajes informativos en la portada 
 	- Implementadas diversas mejoras en la seguridad

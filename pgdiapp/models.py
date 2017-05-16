@@ -106,11 +106,11 @@ class Grupo(models.Model):
 
 class Portada(models.Model):
 	grado = models.ForeignKey(Grado, blank=False, null=False, on_delete=models.CASCADE)
-	clase = models.CharField(max_length=5, null=False)
+	clase = models.CharField(max_length=7, null=False)
 	mensaje = models.TextField(default=None, blank=True, null=True)
 	visible = models.BooleanField(default=False)
 	def __str__(self):
-		return str(self.grado) + ": " + str(self.mensaje)
+		return str(self.grado) + ": " + str(self.mensaje) + " (" + str(self.clase) + ")"
 	class Meta:
 		ordering = ["grado"]
 		verbose_name_plural = "Portadas"

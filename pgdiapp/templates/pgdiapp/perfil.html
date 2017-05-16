@@ -104,7 +104,7 @@
 		</table>
 		<div style="clear:both;">
 			{% if user.is_authenticated and user.username == alumno.0.0.1.uid.0 or user.is_staff %}
-				<div class="alert {% if porcentaje < w1 %}alert-info{% elif porcentaje < w2 %}alert-warn{% else %}alert-error{% endif %}">
+				<div class="alert alert-{% if blando == '0K' and duro == '0K' %}success{% else %}{% if porcentaje < w1 %}info{% elif porcentaje < w2 %}warn{% else %}error{% endif %}{% endif %}">
 					Espacio ocupado en disco: <strong>{{ cuota }}</strong> / <strong>{{ blando }}</strong> ({{ porcentaje }}%)
 					<ul>
 					{% for file in top %}

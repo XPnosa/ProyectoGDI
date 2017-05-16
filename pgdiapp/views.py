@@ -43,7 +43,7 @@ def regmod(request):
 	openrg.save()
 	return redirect('/app')
 
-# Habilitar/Deshabilitar la eleccion del nombre de usuario
+# Habilitar/Deshabilitar la elección del nombre de usuario
 def funmod(request):
 	freeun = Configuracion.objects.get(clave='freeusername')
 	if freeun.valor:
@@ -60,7 +60,7 @@ def pendientes(request):
 	except:
 		return redirect('/app/login')
 	l_grados = obtener_grados(grupos)
-	# Operaciones multiples
+	# Operaciones múltiples
 	if request.method == 'POST' and 'l_grado' in request.POST:
 		grado = request.POST['l_grado']
 		# Confirmaciones
@@ -104,7 +104,7 @@ def alumnos(request):
 	except:
 		return redirect('/app/login')
 	l_grados = obtener_grados(grupos)
-	# Operaciones multiples
+	# Operaciones múltiples
 	if request.method == 'POST' and 'l_grado' in request.POST:
 		grado = request.POST['l_grado']
 		# Confirmaciones
@@ -158,7 +158,7 @@ def perfil(request, grado, usuario):
 		}
 	)
 
-# Edicion de perfil
+# Edición de perfil
 def editar(request, grado, usuario):
 	alumno = ldap_search("ou="+grado+","+settings.LDAP_STUDENTS_BASE,ldap.SCOPE_ONELEVEL,None,"(uid="+usuario+")")
 	if len(alumno) != 1:
@@ -272,7 +272,7 @@ def registro(request):
 		pform = UserProfileForm()
 	return render(request, 'pgdiapp/user_form.html', { 'uform': uform, 'pform': pform, 'grado':grado, 'ip':ip, 'freeun':freeun, 'openrg':openrg })
 
-# Pre-registro de un nuevo alumno
+# Pre-registro de un antiguo alumno
 def regreso(request):
 	ip = request.META['REMOTE_ADDR']
 	dni = None
@@ -299,7 +299,7 @@ def regreso(request):
 				return HttpResponseRedirect("/app/noencontrado")
 	return render(request, 'pgdiapp/old_user_form.html', { 'dni':dni, 'l_grados':l_grados, 'grado':grado, 'ip':ip, 'openrg':openrg })
 
-# Formularo de preguntas
+# Formulario de preguntas
 def cuestionario(request, user_name):
 	usuario = User.objects.get(username=user_name)
 	perfil = Perfil.objects.get(user=usuario)
@@ -318,14 +318,14 @@ def cuestionario(request, user_name):
 		respuestas = RespuestaFormSet()
 	return render(request, 'pgdiapp/cuestionario.html', { 'alumno':perfil, 'preguntas':preguntas, 'respuestas':RespuestaFormSet, 'openrg':openrg })
 
-# Funcion para encriptar
+# Encriptar la contraseña
 def encriptar(plano):
 	encriptado = "{CRYPT}"+crypt.crypt(plano,'$6$'+"".join([random.choice(string.ascii_letters+string.digits) for _ in range(16)]))
 	return encriptado
 
 # Consultar cuotas de disco
-def consultar_cuota(usuario,modo=""):
-	comando = 'sudo repquota ' + modo + ' /home -O csv'
+def consultar_cuota(usuario):
+	comando = 'sudo repquota /home -O csv'
 	proceso = subprocess.Popen(comando, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
 	salida, error = proceso.communicate()
 	if salida and not error:
@@ -339,7 +339,7 @@ def consultar_cuota(usuario,modo=""):
 		return (0,0,0)
 	return (cuota[settings.QUOTA_USED_DISK_FIELD],cuota[settings.QUOTA_SOFT_LIMIT_FIELD],cuota[settings.QUOTA_HARD_LIMIT_FIELD])
 
-# Consultar ficheros mas pesados
+# Consultar ficheros más pesados
 def consultar_mas_pesados(usuario,n=None):
 	comando = 'du -s '+ str(settings.HOME_DIRECTORY + usuario) + '/*'
 	proceso = subprocess.Popen(comando, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
@@ -364,7 +364,6 @@ def consultar_mas_pesados(usuario,n=None):
 			listado[idx][0] = humanizar(listado[idx][0])
 		return listado
 	else:
-		return redirect(error)
 		return [["INFO:","El directorio no existe o esta vacío"]]
 	return 
 
@@ -378,7 +377,7 @@ def humanizar(nb):
 		i += 1
 	return '%s%s' % (nb, sufijo[i])
 
-# Obtencion de la lista de grados del profesor
+# Obtención de la lista de grados del profesor
 def obtener_grados(grupos):
 	l_grados = []
 	if 'ASIR' in grupos:
@@ -389,7 +388,7 @@ def obtener_grados(grupos):
 		l_grados.append('SMR')
 	return l_grados
 
-# Obtencion del grado por taller
+# Obtención del grado por taller
 def obtener_grado(ip, hora):
 	if int(hora) > 15:
 		es_nocturno = True
@@ -401,7 +400,7 @@ def obtener_grado(ip, hora):
 		grado = 'desconocido'
 	return grado
 
-# Generacion del nombre del usuario
+# Generación del nombre del usuario
 def generar_username(nom, ap1, ap2):
 	for character in string.digits+" @.+-_":
 		nom = nom.replace(character,'')
@@ -409,7 +408,7 @@ def generar_username(nom, ap1, ap2):
 		ap2 = ap2.replace(character,'')
 	return ''.join((c for c in unicodedata.normalize('NFD', (nom+ap1[:2]+ap2[:2]).lower()) if unicodedata.category(c) != 'Mn'))
 
-# Calculo de un nuevo uid/gid number
+# Cálculo de un nuevo uid/gid number
 def calcular_id(xid):
 	usuarios = ldap_search(settings.LDAP_USERS_BASE,ldap.SCOPE_SUBTREE,None,"(objectClass=person)")
 	ids = []
@@ -417,7 +416,7 @@ def calcular_id(xid):
 		ids.append(int(u[0][1][xid][0]))
 	return max(ids)+1
 
-# Comprobacion de antiguos alumnos
+# Comprobación de antiguos alumnos
 def es_exalumno(usuario):
 	if len(ldap_search(settings.LDAP_EXSTUDENTS_BASE,ldap.SCOPE_ONELEVEL,None,"(uid="+usuario+")")) > 0:
 		esExalumno = True
@@ -425,7 +424,7 @@ def es_exalumno(usuario):
 		esExalumno = False
 	return esExalumno
 
-# Busqueda de datos en ldap
+# Búsqueda de datos en ldap
 def ldap_search(baseDN,searchScope,retrieveAttributes,searchFilter):
 	l = ldap.open(settings.LDAP_SERVER_NAME)
 	l.protocol_version = settings.LDAP_VERSION
@@ -521,7 +520,7 @@ def alta_efectiva(grado, usuario):
 	# Actualizar perfil temporal
 	alumno.validado = True
 	alumno.save()
-	# Enviar correo de bienvenida
+	# Envíar correo de bienvenida
 	construir_correo(alumno,grado,'WELCOME')
 	return alumno
 
@@ -584,7 +583,7 @@ def baja_efectiva(grado, usuario):
 	exalumno.grado = None
 	exalumno.validado = False
 	exalumno.save()
-	# Enviar correo de despedida
+	# Envíar correo de despedida
 	construir_correo(exalumno,grado,'BYEBYE')
 
 # Descartar alumnos pre-registrados
@@ -608,7 +607,7 @@ def descarte_efectivo(grado, usuario):
 		alumno = User.objects.get(username=usuario)
 		alumno.delete()
 
-# Envio de emails
+# Envío de emails
 def construir_correo(usuario, grado, tipo):
 	objMsg = Mensaje.objects.get(cod=tipo)
 	origen = settings.SMTP_NAME
@@ -658,7 +657,7 @@ def login_view(request):
 	else:
 		return render(request, 'pgdiapp/login.html')
 
-# Cambiar password
+# Cambiar contraseña
 def chpasswd(request):
 	if request.method == 'POST':
 		form = PasswordChangeForm(request.user, request.POST)

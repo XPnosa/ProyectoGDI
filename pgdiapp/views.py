@@ -1,3 +1,5 @@
+#-*- coding: utf-8 -*-
+
 from django.shortcuts import render, redirect, render_to_response 
 from django.http import HttpResponse, HttpResponseRedirect, HttpRequest
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
@@ -12,17 +14,24 @@ from email.mime.text import MIMEText
 
 from datetime import datetime
 
+from lxml.html.clean import clean_html
+
 from .forms import *
 from .models import *
 
-import ldap, copy, crypt, string, random, unicodedata, base64, smtplib, os, subprocess
+import ldap, copy, crypt, string, random, unicodedata, base64, smtplib, subprocess
 import ldap.modlist as modlist
 
 # Vistas
 def index(request):
 	openrg = Configuracion.objects.get(clave='openregister').valor
 	freeun = Configuracion.objects.get(clave='freeusername').valor
-	return render(request, 'pgdiapp/index.html', { 'openrg':openrg, 'freeun':freeun })
+	if request.user.is_authenticated and not request.user.is_staff:
+		l_grado = Perfil.objects.get(user=request.user).grado
+		portada = Portada.objects.filter(grado=l_grado,visible=True)
+	else:
+		portada = None
+	return render(request, 'pgdiapp/index.html', { 'openrg':openrg, 'freeun':freeun, 'portada':portada })
 
 # Habilitar/Deshabilitar el registro
 def regmod(request):
@@ -132,22 +141,22 @@ def perfil(request, grado, usuario):
 	# Obtener foto
 	if 'jpegPhoto' in alumno[0][0][1]:
 		alumno[0][0][1]['jpegPhoto'][0] = base64.b64encode(bytes(alumno[0][0][1]['jpegPhoto'][0]))
-	# Obtener espacio en disco
-	u, error = consultar_cuota(4,usuario)
-	usado, error = consultar_cuota(4,usuario,'-s')
-	# Campo 4 -> disco utilizado
-	b, error = consultar_cuota(5,usuario)
-	blando, error = consultar_cuota(5,usuario,'-s')
-	# Campo 5 -> Limite blando
-	d, error = consultar_cuota(6,usuario)
-	duro, error = consultar_cuota(6,usuario,'-s')
-	# Campo 6 -> Limite duro
+	# Obtener quotas y espacio ocupado en disco
+	usado, blando, duro = consultar_cuota(usuario)
+	top = consultar_mas_pesados(usuario,settings.MAX_SIZE_FILE_LIMIT)
 	try:
-		p = float(u) / float(b) * float(100)
+		p = float(usado) / float(blando) * float(100)
 	except:
-		p = 100
+		p = 0
 	porcentaje = float("{0:.2f}".format(p))
-	return render(request, 'pgdiapp/perfil.html', { 'alumno': alumno, 'grado':grado, 'cuota':usado, 'blando':blando, 'duro':duro, 'porcentaje':porcentaje })
+	return render( 
+		request, 'pgdiapp/perfil.html', 
+		{ 
+			'alumno': alumno, 'grado':grado, 
+			'cuota':humanizar(int(usado)), 'blando':humanizar(int(blando)), 'duro':humanizar(int(duro)), 
+			'porcentaje':porcentaje, 'top':top, 'w1':settings.QUOTA_WARN1_LEVEL ,'w2':settings.QUOTA_WARN2_LEVEL 
+		}
+	)
 
 # Edicion de perfil
 def editar(request, grado, usuario):
@@ -314,18 +323,60 @@ def encriptar(plano):
 	encriptado = "{CRYPT}"+crypt.crypt(plano,'$6$'+"".join([random.choice(string.ascii_letters+string.digits) for _ in range(16)]))
 	return encriptado
 
-# Consultar cuota de disco
-def consultar_cuota(campo,usuario,modo=""):
-	if campo in (4,5,6):
-		comando = 'repquota ' + modo + ' /home -O csv | grep ' + str(usuario) + ' | cut -d "," -f ' + str(campo)
-		proceso = subprocess.Popen(comando, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-		salida, error = proceso.communicate()
-		if error or not salida:
-			return (0, error)
-		else:
-			return (salida, error)
+# Consultar cuotas de disco
+def consultar_cuota(usuario,modo=""):
+	comando = 'sudo repquota ' + modo + ' /home -O csv'
+	proceso = subprocess.Popen(comando, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+	salida, error = proceso.communicate()
+	if salida and not error:
+		salida = salida.split('\n')
+		for linea in salida:
+			if usuario in linea:
+				cuota = linea
+	try:
+		cuota = cuota.split(',')
+	except:
+		return (0,0,0)
+	return (cuota[settings.QUOTA_USED_DISK_FIELD],cuota[settings.QUOTA_SOFT_LIMIT_FIELD],cuota[settings.QUOTA_HARD_LIMIT_FIELD])
+
+# Consultar ficheros mas pesados
+def consultar_mas_pesados(usuario,n=None):
+	comando = 'du -s '+ str(settings.HOME_DIRECTORY + usuario) + '/*'
+	proceso = subprocess.Popen(comando, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+	s1, error = proceso.communicate()
+	comando = 'sudo du -s '+ str(settings.HOME_DIRECTORY + usuario) + '/.[!.]*'
+	proceso = subprocess.Popen(comando, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+	s2, error = proceso.communicate()
+	salida = s1 + s2
+	if salida and not error:
+		salida = salida.replace(str(settings.HOME_DIRECTORY + usuario),"~")
+		salida = salida.split('\n')
+		salida.pop(-1)
+		listado = []
+		for linea in salida:
+			listado.append(linea.split('\t'))
+			listado[-1][0] = int(listado[-1][0])
+		listado.sort(reverse=True)
+		if n:
+			while (len(listado) > n):
+				listado.pop(-1)
+		for idx in range(0,len(listado)):
+			listado[idx][0] = humanizar(listado[idx][0])
+		return listado
 	else:
-		return (None,"Campo no valido")
+		return redirect(error)
+		return [["INFO:","El directorio no existe o esta vacío"]]
+	return 
+
+# Convertir a formato humano tamaños de ficheros
+def humanizar(nb):
+	sufijo = ['K', 'M', 'G', 'T', 'P']
+	if nb == 0: return '0K'
+	i = 0
+	while nb >= 1024 and i < len(sufijo)-1:
+		nb /= 1024
+		i += 1
+	return '%s%s' % (nb, sufijo[i])
 
 # Obtencion de la lista de grados del profesor
 def obtener_grados(grupos):
@@ -425,7 +476,6 @@ def alta_efectiva(grado, usuario):
 		attrs['homeDirectory'] = str(settings.HOME_DIRECTORY+alumno.user.username)
 		attrs['uidNumber'] = str(id_number)
 		attrs['gidNumber'] = str(id_number)
-		attrs['quota'] = str(settings.MAX_STORAGE_QUOTA)
 		attrs['userPassword'] = alumno.passwd.encode('utf-8')
 
 		dn="cn="+usuario+",ou="+grado+","+settings.LDAP_STUDENTS_BASE
@@ -567,7 +617,7 @@ def construir_correo(usuario, grado, tipo):
 	msg['To'] = destino
 	msg['From'] = origen
 	msg['Subject'] = objMsg.asunto
-	mensaje = expandir_etiquetas(objMsg.cuerpo,usuario.user.username,grado)
+	mensaje = expandir_etiquetas(clean_html(objMsg.cuerpo),usuario.user.username,grado)
 	msg.attach(MIMEText(mensaje,'html'))
 	enviar_correo(origen,destino,msg)
 
@@ -598,7 +648,11 @@ def login_view(request):
 				perfil = Perfil.objects.get(user__username=username)
 			except:
 				return redirect('/app')
-			return HttpResponseRedirect("/app/perfil/"+perfil.grado.cod+"/"+username)
+			try:
+				return HttpResponseRedirect("/app/perfil/"+perfil.grado.cod+"/"+username)
+			except:
+				logout(request)
+				return redirect('/app/error')
 		else:
 			return redirect('/app/error')
 	else:

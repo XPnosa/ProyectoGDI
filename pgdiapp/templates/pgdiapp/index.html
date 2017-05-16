@@ -13,7 +13,7 @@
 		{% if not user.is_authenticated %}
 			<div>
 				<button class="btn btn-high" onclick="location.href='{% url 'login_view' %}'">Acceso al sistema</button>
-				{% if openrg %}<button class="btn btn-high btn-warning" onclick="location.href='{% url 'registro' %}'">Registrate ahora</button>{% endif %}
+				{% if openrg %}<button class="btn btn-high btn-success" onclick="location.href='{% url 'registro' %}'">Registrate ahora</button>{% endif %}
 			</div>
 		{% else %}
 			{# user.ldap_user.dn #}
@@ -28,6 +28,12 @@
 				<button class="btn btn-high" onclick="location.href='{% url 'pendientes' %}'">Registros pendientes</button>
 			{% endif %}
 			{% if not user.is_superuser and not user.is_staff %}
+				{% if portada %}
+					{% for mensaje in portada %}
+						<div class="alert alert-{{ mensaje.clase }}">{{ mensaje.mensaje|safe }}</div>
+					{% endfor %}
+					<hr />
+				{% endif %}
 				<button class="btn btn-high" onclick="
 					{% if 'ou=asir' in user.ldap_user.dn %}location.href='{% url 'perfil' 'ASIR' user.username %}'{% endif %}
 					{% if 'ou=dam' in user.ldap_user.dn %}location.href='{% url 'perfil' 'DAM' user.username %}'{% endif %}

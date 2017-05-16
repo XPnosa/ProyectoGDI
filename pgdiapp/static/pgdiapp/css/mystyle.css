@@ -114,3 +114,11 @@ td {
 	cursor: pointer;
 	padding: 2px;
 }
+pre {
+	background: none !important;
+	border: none !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	color: inherit !important;
+	font-size: inherit !important;
+}

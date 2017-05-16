@@ -6,6 +6,11 @@ ReadMe
 
 **Changelog**
 
+- v1.6:
+	- Añadidos mensajes informativos en la portada 
+	- Implementadas diversas mejoras en la seguridad
+	- Correcciones y cambios en las vistas de perfiles
+
 - v1.5:
 	- Añadida función para la consulta del espacio disponible en disco
 

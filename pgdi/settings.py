@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/1.10/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
-
 import os
 import ldap
 
@@ -82,10 +81,23 @@ SMTP_PASS = 'pass.segundo.asir'
 SMTP_NAME = 'Robot PGDI'
 
 # PGDI
+# Valores por defecto para los nuevos usuarios
 
 LOGIN_SHELL = '/bin/bash'
 HOME_DIRECTORY = '/home/pub/'
-MAX_STORAGE_QUOTA = '500m'
+
+# Numero de directorios de gran peso a mostrar
+MAX_SIZE_FILE_LIMIT = 10
+
+# Umbrales de alerta para disco ocupado (en %)
+QUOTA_WARN1_LEVEL = 60
+QUOTA_WARN2_LEVEL = 90
+
+# Campos de "repquota"
+QUOTA_USED_DISK_FIELD = 3
+QUOTA_SOFT_LIMIT_FIELD = 4
+QUOTA_HARD_LIMIT_FIELD = 5
+
 
 # Application definition
 

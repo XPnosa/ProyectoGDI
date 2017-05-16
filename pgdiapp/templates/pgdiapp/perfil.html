@@ -104,8 +104,13 @@
 		</table>
 		<div style="clear:both;">
 			{% if user.is_authenticated and user.username == alumno.0.0.1.uid.0 or user.is_staff %}
-				<div class="alert {% if porcentaje < 60 %}alert-info{% elif porcentaje < 90 %}alert-warn{% else %}alert-error{% endif %}">
+				<div class="alert {% if porcentaje < w1 %}alert-info{% elif porcentaje < w2 %}alert-warn{% else %}alert-error{% endif %}">
 					Espacio ocupado en disco: <strong>{{ cuota }}</strong> / <strong>{{ blando }}</strong> ({{ porcentaje }}%)
+					<ul>
+					{% for file in top %}
+						<li><pre>{{ file.0 }}	{{ file.1 }}</pre></li>
+					{% endfor %}
+					</ul>
 				</div><hr />
 				<div><button class="btn btn-high btn-info" onclick="location.href='{% url 'editar' grado alumno.0.0.1.uid.0 %}'">Modificar datos</button>
 			{% else %}
@@ -114,7 +119,7 @@
 			{% if user.is_staff %}
 				<button class="btn btn-high" onclick="location.href='{% url 'alumnos' %}'">Volver</button></div>
 			{% else %}
-				<button class="btn btn-high" onclick="location.href='{% url 'index' %}'">Volver</button></div>
+				<button class="btn btn-high" onclick="location.href='{% url 'index' %}'">Ir a la portada</button></div>
 			{% endif %}
 		</div>
 	</div>

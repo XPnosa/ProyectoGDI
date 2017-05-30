@@ -6,6 +6,9 @@ ReadMe
 
 **Changelog**
 
+- v1.8:
+	- Correcciones y otros cambios menores
+
 - v1.7:
 	- Correcciones y otras mejoras en la seguridad
 

@@ -100,6 +100,11 @@ td {
 	border: 1px solid #d9d9d9;
 	border-radius: 3px;
 }
+.index-img {
+	width: 50%;
+	border: 1px solid #d9d9d9;
+	border-radius: 5px;
+}
 .ws-popover-opener {
 	top: -1px;
 	left: -1px;
@@ -121,4 +126,9 @@ pre {
 	margin: 0 !important;
 	color: inherit !important;
 	font-size: inherit !important;
+}
+.help {
+	float: right;
+	position: relative;
+	right: 70px;
 }

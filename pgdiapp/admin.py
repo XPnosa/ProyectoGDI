@@ -4,6 +4,7 @@ from .models import *
 admin.site.register(Clase)
 admin.site.register(Grado)
 admin.site.register(Grupo)
+admin.site.register(Tipo)
 admin.site.register(Perfil)
 admin.site.register(Taller)
 admin.site.register(Mensaje)

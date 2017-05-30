@@ -104,13 +104,21 @@ class Grupo(models.Model):
 		unique_together = ('grado','dn')
 		verbose_name_plural = "Grupos"
 
+class Tipo(models.Model):
+	clase = models.CharField(max_length=7, null=False, unique=True)
+	def __str__(self):
+		return str(self.clase)
+	class Meta:
+		ordering = ["clase"]
+		verbose_name_plural = "Tipos"
+
 class Portada(models.Model):
 	grado = models.ForeignKey(Grado, blank=False, null=False, on_delete=models.CASCADE)
-	clase = models.CharField(max_length=7, null=False)
+	tipo = models.ForeignKey(Tipo, blank=False, null=False, on_delete=models.CASCADE)
 	mensaje = models.TextField(default=None, blank=True, null=True)
 	visible = models.BooleanField(default=False)
 	def __str__(self):
-		return str(self.grado) + ": " + str(self.mensaje) + " (" + str(self.clase) + ")"
+		return str(self.grado) + ": " + str(self.mensaje) + " (" + str(self.tipo) + ")"
 	class Meta:
 		ordering = ["grado"]
 		verbose_name_plural = "Portadas"

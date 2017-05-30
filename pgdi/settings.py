@@ -99,6 +99,12 @@ QUOTA_USED_DISK_FIELD = 3
 QUOTA_SOFT_LIMIT_FIELD = 4
 QUOTA_HARD_LIMIT_FIELD = 5
 
+# Uso de sudo
+PGDI_SUDO = True
+
+# SSH
+SSH_USER = "espinosa"
+SSH_HOST = "pgdi"
 
 # Application definition
 

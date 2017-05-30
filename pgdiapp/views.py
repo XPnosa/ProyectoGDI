@@ -26,12 +26,7 @@ import ldap.modlist as modlist
 def index(request):
 	openrg = Configuracion.objects.get(clave='openregister').valor
 	freeun = Configuracion.objects.get(clave='freeusername').valor
-	if request.user.is_authenticated and not request.user.is_staff:
-		l_grado = Perfil.objects.get(user=request.user).grado
-		portada = Portada.objects.filter(grado=l_grado,visible=True)
-	else:
-		portada = None
-	return render(request, 'pgdiapp/index.html', { 'openrg':openrg, 'freeun':freeun, 'portada':portada })
+	return render(request, 'pgdiapp/index.html', { 'openrg':openrg, 'freeun':freeun })
 
 # Habilitar/Deshabilitar el registro
 def regmod(request):
@@ -141,6 +136,12 @@ def perfil(request, grado, usuario):
 	# Obtener foto
 	if 'jpegPhoto' in alumno[0][0][1]:
 		alumno[0][0][1]['jpegPhoto'][0] = base64.b64encode(bytes(alumno[0][0][1]['jpegPhoto'][0]))
+	# Obtener mensajes de ayuda
+	if request.user.is_authenticated and not request.user.is_staff:
+		l_grado = Perfil.objects.get(user=request.user).grado
+		portada = Portada.objects.filter(grado=l_grado,visible=True)
+	else:
+		portada = None
 	# Obtener quotas y espacio ocupado en disco
 	usado, blando, duro = consultar_cuota(usuario)
 	top = consultar_mas_pesados(usuario,settings.MAX_SIZE_FILE_LIMIT)
@@ -152,7 +153,7 @@ def perfil(request, grado, usuario):
 	return render( 
 		request, 'pgdiapp/perfil.html', 
 		{ 
-			'alumno': alumno, 'grado':grado, 
+			'alumno': alumno, 'grado':grado, 'portada':portada,
 			'cuota':humanizar(int(usado)), 'blando':humanizar(int(blando)), 'duro':humanizar(int(duro)), 
 			'porcentaje':porcentaje, 'top':top, 'w1':settings.QUOTA_WARN1_LEVEL ,'w2':settings.QUOTA_WARN2_LEVEL 
 		}
@@ -283,20 +284,23 @@ def regreso(request):
 	l_grados = Grado.objects.all()
 	if request.method == 'POST':
 		if request.POST['dni'] and request.POST['grado']:
-			l_usuarios = ldap_search(settings.LDAP_EXSTUDENTS_BASE,ldap.SCOPE_ONELEVEL,None,"(dni="+request.POST['dni']+")")
-			if len(l_usuarios) == 1:
-				usuario = l_usuarios[0][0][1]['uid'][0]
-				grado = request.POST['grado']
-				perfil = Perfil.objects.get(user__username=usuario)
-				objGrado = Grado.objects.get(cod=grado)
-				if not perfil.grado:
-					perfil.grado = objGrado
-					perfil.save()
-					return HttpResponseRedirect("/app/cuestionario/"+str(usuario))
+			if "acerca de" in request.POST['dni'].lower():
+				return render(request, 'pgdiapp/ee.html')
+			else:
+				l_usuarios = ldap_search(settings.LDAP_EXSTUDENTS_BASE,ldap.SCOPE_ONELEVEL,None,"(dni="+request.POST['dni']+")")
+				if len(l_usuarios) == 1:
+					usuario = l_usuarios[0][0][1]['uid'][0]
+					grado = request.POST['grado']
+					perfil = Perfil.objects.get(user__username=usuario)
+					objGrado = Grado.objects.get(cod=grado)
+					if not perfil.grado:
+						perfil.grado = objGrado
+						perfil.save()
+						return HttpResponseRedirect("/app/cuestionario/"+str(usuario))
+					else:
+						return HttpResponseRedirect("/app/noencontrado")
 				else:
 					return HttpResponseRedirect("/app/noencontrado")
-			else:
-				return HttpResponseRedirect("/app/noencontrado")
 	return render(request, 'pgdiapp/old_user_form.html', { 'dni':dni, 'l_grados':l_grados, 'grado':grado, 'ip':ip, 'openrg':openrg })
 
 # Formulario de preguntas
@@ -325,11 +329,14 @@ def encriptar(plano):
 
 # Consultar cuotas de disco
 def consultar_cuota(usuario):
-	comando = 'sudo repquota /home -O csv'
-	proceso = subprocess.Popen(comando, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-	salida, error = proceso.communicate()
-	if salida and not error:
-		salida = salida.split('\n')
+	comando = 'repquota /home -O csv'
+	if settings.PGDI_SUDO:
+		comando = "sudo " + comando
+	proceso = subprocess.Popen(["ssh", settings.SSH_USER + "@" + settings.SSH_HOST, comando], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
+	salida = proceso.stdout.readlines()
+	if salida == []:
+		error = proceso.stderr.readlines()
+	else:
 		for linea in salida:
 			if usuario in linea:
 				cuota = linea
@@ -342,20 +349,23 @@ def consultar_cuota(usuario):
 # Consultar ficheros más pesados
 def consultar_mas_pesados(usuario,n=None):
 	comando = 'du -s '+ str(settings.HOME_DIRECTORY + usuario) + '/*'
-	proceso = subprocess.Popen(comando, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-	s1, error = proceso.communicate()
-	comando = 'sudo du -s '+ str(settings.HOME_DIRECTORY + usuario) + '/.[!.]*'
-	proceso = subprocess.Popen(comando, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-	s2, error = proceso.communicate()
+	proceso = subprocess.Popen(["ssh", settings.SSH_USER + "@" + settings.SSH_HOST, comando], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
+	s1 = proceso.stdout.readlines()
+	comando = 'du -s '+ str(settings.HOME_DIRECTORY + usuario) + '/.[!.]*'
+	if settings.PGDI_SUDO:
+		comando = "sudo " + comando
+	proceso = subprocess.Popen(["ssh", settings.SSH_USER + "@" + settings.SSH_HOST, comando], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
+	s2 = proceso.stdout.readlines()
 	salida = s1 + s2
-	if salida and not error:
-		salida = salida.replace(str(settings.HOME_DIRECTORY + usuario),"~")
-		salida = salida.split('\n')
-		salida.pop(-1)
+	if salida == []:
+		error = proceso.stderr.readlines()
+		return [["INFO:","El directorio " + str(settings.HOME_DIRECTORY + usuario) + " no existe o esta vacío."]]
+	else:
 		listado = []
 		for linea in salida:
 			listado.append(linea.split('\t'))
 			listado[-1][0] = int(listado[-1][0])
+			listado[-1][1] = listado[-1][1].replace(str(settings.HOME_DIRECTORY + usuario),"~")
 		listado.sort(reverse=True)
 		if n:
 			while (len(listado) > n):
@@ -363,9 +373,6 @@ def consultar_mas_pesados(usuario,n=None):
 		for idx in range(0,len(listado)):
 			listado[idx][0] = humanizar(listado[idx][0])
 		return listado
-	else:
-		return [["INFO:","El directorio no existe o esta vacío"]]
-	return 
 
 # Convertir a formato humano tamaños de ficheros
 def humanizar(nb):

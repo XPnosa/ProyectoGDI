@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+	<h2 class="sub-title">Acerca de...</h2>
+	<div id="suit-center">
+		<div class="alert alert-success">Esta aplicación ha sido desarrollada por <strong>Juan Antonio Espinosa Prieto</strong>.</div><hr />
+		<div>
+			<button class="btn btn-high" onclick="location.href='{% url 'regreso' %}'">Volver</button>
+		</div>
+	</div>
+{% endblock %}

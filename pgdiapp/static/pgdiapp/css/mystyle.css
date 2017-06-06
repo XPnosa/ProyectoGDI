@@ -36,7 +36,7 @@ td {
 	display: none !important;
 }
 #suit-center {
-	width: 96% !important;
+	width: 100% !important;
 }
 .top-button {
 	float: right;
@@ -130,5 +130,5 @@ pre {
 .help {
 	float: right;
 	position: relative;
-	right: 70px;
+	right: 20px;
 }

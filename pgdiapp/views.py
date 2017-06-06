@@ -2,22 +2,24 @@
 
 from django.shortcuts import render, redirect, render_to_response 
 from django.http import HttpResponse, HttpResponseRedirect, HttpRequest
-from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
+from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth.decorators import login_required
 from django.forms import formset_factory
 from django_auth_ldap.config import LDAPSearch, PosixGroupType
 from django.conf import settings
 
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-
 from datetime import datetime
-
-from lxml.html.clean import clean_html
 
 from .forms import *
 from .models import *
+
+from altas import *
+from bajas import *
+from descartes import *
+from correos import *
+from cuotas import *
+from utiles import *
 
 import ldap, copy, crypt, string, random, unicodedata, base64, smtplib, subprocess
 import ldap.modlist as modlist
@@ -27,26 +29,6 @@ def index(request):
 	openrg = Configuracion.objects.get(clave='openregister').valor
 	freeun = Configuracion.objects.get(clave='freeusername').valor
 	return render(request, 'pgdiapp/index.html', { 'openrg':openrg, 'freeun':freeun })
-
-# Habilitar/Deshabilitar el registro
-def regmod(request):
-	openrg = Configuracion.objects.get(clave='openregister')
-	if openrg.valor:
-		openrg.valor = False
-	else:
-		openrg.valor = True
-	openrg.save()
-	return redirect('/app')
-
-# Habilitar/Deshabilitar la elección del nombre de usuario
-def funmod(request):
-	freeun = Configuracion.objects.get(clave='freeusername')
-	if freeun.valor:
-		freeun.valor = False
-	else:
-		freeun.valor = True
-	freeun.save()
-	return redirect('/app')
 
 # Listado de alumnos registrados (no validados)
 def pendientes(request):
@@ -199,43 +181,6 @@ def subir_foto(request, grado, usuario):
 		form = PhotoForm()
 	return render(request, 'pgdiapp/subir_foto.html', { 'alumno': usuario, 'grado':grado, 'form': form })
 
-# Validar foto de perfil
-def validar_foto(foto):
-	if foto.content_type == "image/jpeg" and foto.size <= 1024*1024:
-		return True
-	return False
-
-# Sincronizar perfil en ldap
-def sincronizar(alumno,grado,telefono,email,cp,direccion,localidad,provincia,comunidad,pais):
-	l = ldap.initialize(settings.AUTH_LDAP_SERVER_URI)
-	l.simple_bind_s(settings.AUTH_LDAP_BIND_DN,settings.AUTH_LDAP_BIND_PASSWORD)
-	dn="cn="+alumno+",ou="+grado+","+settings.LDAP_STUDENTS_BASE
-	old = ldap_search(dn,ldap.SCOPE_BASE,None,"(cn="+alumno+")")[0][0][1]
-	new = copy.deepcopy(old)
-	new['telephoneNumber'] = telefono.encode('utf-8')
-	new['mail'] = email.encode('utf-8')
-	new['postalCode'] = cp.encode('utf-8')
-	new['street'] = direccion.encode('utf-8')
-	new['l'] = localidad.encode('utf-8')
-	new['st'] = provincia.encode('utf-8')
-	new['c'] = comunidad.encode('utf-8')
-	new['co'] = pais.encode('utf-8')
-	ldif = modlist.modifyModlist(old,new)
-	l.modify_s(dn,ldif)
-	l.unbind_s()
-
-# Actualizar foto de perfil en ldap
-def actualizar_foto(alumno,grado,foto):
-	l = ldap.initialize(settings.AUTH_LDAP_SERVER_URI)
-	l.simple_bind_s(settings.AUTH_LDAP_BIND_DN,settings.AUTH_LDAP_BIND_PASSWORD)
-	dn="cn="+alumno+",ou="+grado+","+settings.LDAP_STUDENTS_BASE
-	old = ldap_search(dn,ldap.SCOPE_BASE,None,"(cn="+alumno+")")[0][0][1]
-	new = copy.deepcopy(old)
-	new['jpegPhoto'] = foto.read()
-	ldif = modlist.modifyModlist(old,new)
-	l.modify_s(dn,ldif)
-	l.unbind_s()
-
 # Respuestas del cuestionario
 def respuestas(request, grado, usuario):
 	try:
@@ -321,326 +266,6 @@ def cuestionario(request, user_name):
 	else:
 		respuestas = RespuestaFormSet()
 	return render(request, 'pgdiapp/cuestionario.html', { 'alumno':perfil, 'preguntas':preguntas, 'respuestas':RespuestaFormSet, 'openrg':openrg })
-
-# Encriptar la contraseña
-def encriptar(plano):
-	encriptado = "{CRYPT}"+crypt.crypt(plano,'$6$'+"".join([random.choice(string.ascii_letters+string.digits) for _ in range(16)]))
-	return encriptado
-
-# Consultar cuotas de disco
-def consultar_cuota(usuario):
-	comando = 'repquota /home -O csv'
-	if settings.PGDI_SUDO:
-		comando = "sudo " + comando
-	proceso = subprocess.Popen(["ssh", settings.SSH_USER + "@" + settings.SSH_HOST, comando], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
-	salida = proceso.stdout.readlines()
-	if salida == []:
-		error = proceso.stderr.readlines()
-	else:
-		for linea in salida:
-			if usuario in linea:
-				cuota = linea
-	try:
-		cuota = cuota.split(',')
-	except:
-		return (0,0,0)
-	return (cuota[settings.QUOTA_USED_DISK_FIELD],cuota[settings.QUOTA_SOFT_LIMIT_FIELD],cuota[settings.QUOTA_HARD_LIMIT_FIELD])
-
-# Consultar ficheros más pesados
-def consultar_mas_pesados(usuario,n=None):
-	comando = 'du -s '+ str(settings.HOME_DIRECTORY + usuario) + '/*'
-	proceso = subprocess.Popen(["ssh", settings.SSH_USER + "@" + settings.SSH_HOST, comando], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
-	s1 = proceso.stdout.readlines()
-	comando = 'du -s '+ str(settings.HOME_DIRECTORY + usuario) + '/.[!.]*'
-	if settings.PGDI_SUDO:
-		comando = "sudo " + comando
-	proceso = subprocess.Popen(["ssh", settings.SSH_USER + "@" + settings.SSH_HOST, comando], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
-	s2 = proceso.stdout.readlines()
-	salida = s1 + s2
-	if salida == []:
-		error = proceso.stderr.readlines()
-		return [["INFO:","El directorio " + str(settings.HOME_DIRECTORY + usuario) + " no existe o esta vacío."]]
-	else:
-		listado = []
-		for linea in salida:
-			listado.append(linea.split('\t'))
-			listado[-1][0] = int(listado[-1][0])
-			listado[-1][1] = listado[-1][1].replace(str(settings.HOME_DIRECTORY + usuario),"~")
-		listado.sort(reverse=True)
-		if n:
-			while (len(listado) > n):
-				listado.pop(-1)
-		for idx in range(0,len(listado)):
-			listado[idx][0] = humanizar(listado[idx][0])
-		return listado
-
-# Convertir a formato humano tamaños de ficheros
-def humanizar(nb):
-	sufijo = ['K', 'M', 'G', 'T', 'P']
-	if nb == 0: return '0K'
-	i = 0
-	while nb >= 1024 and i < len(sufijo)-1:
-		nb /= 1024
-		i += 1
-	return '%s%s' % (nb, sufijo[i])
-
-# Obtención de la lista de grados del profesor
-def obtener_grados(grupos):
-	l_grados = []
-	if 'ASIR' in grupos:
-		l_grados.append('ASIR')
-	if 'DAM' in grupos:
-		l_grados.append('DAM')
-	if 'SMR' in grupos:
-		l_grados.append('SMR')
-	return l_grados
-
-# Obtención del grado por taller
-def obtener_grado(ip, hora):
-	if int(hora) > 15:
-		es_nocturno = True
-	else:
-		es_nocturno = False
-	try:
-		grado = Clase.objects.get(taller__numero=ip[8:9], grado__nocturno=es_nocturno).grado.cod
-	except:
-		grado = 'desconocido'
-	return grado
-
-# Generación del nombre del usuario
-def generar_username(nom, ap1, ap2):
-	for character in string.digits+" @.+-_":
-		nom = nom.replace(character,'')
-		ap1 = ap1.replace(character,'')
-		ap2 = ap2.replace(character,'')
-	return ''.join((c for c in unicodedata.normalize('NFD', (nom+ap1[:2]+ap2[:2]).lower()) if unicodedata.category(c) != 'Mn'))
-
-# Cálculo de un nuevo uid/gid number
-def calcular_id(xid):
-	usuarios = ldap_search(settings.LDAP_USERS_BASE,ldap.SCOPE_SUBTREE,None,"(objectClass=person)")
-	ids = []
-	for u in usuarios:
-		ids.append(int(u[0][1][xid][0]))
-	return max(ids)+1
-
-# Comprobación de antiguos alumnos
-def es_exalumno(usuario):
-	if len(ldap_search(settings.LDAP_EXSTUDENTS_BASE,ldap.SCOPE_ONELEVEL,None,"(uid="+usuario+")")) > 0:
-		esExalumno = True
-	else:
-		esExalumno = False
-	return esExalumno
-
-# Búsqueda de datos en ldap
-def ldap_search(baseDN,searchScope,retrieveAttributes,searchFilter):
-	l = ldap.open(settings.LDAP_SERVER_NAME)
-	l.protocol_version = settings.LDAP_VERSION
-	ldap_result_id = l.search(baseDN, searchScope, searchFilter, retrieveAttributes)
-	result_set = []
-	while True:
-		result_type, result_data = l.result(ldap_result_id, 0)
-		if (result_data == []):
-			break
-		else:
-			if result_type == ldap.RES_SEARCH_ENTRY:
-				result_set.append(result_data)
-	return result_set
-
-# Dar de alta alumnos
-def alta(request, grado, usuario):
-	alumno = alta_efectiva(grado, usuario)
-	return render(request, 'pgdiapp/alta.html', { 'alumno': alumno })
-
-def alta_efectiva(grado, usuario):
-	alumno = Perfil.objects.get(user__username=usuario)
-	l = ldap.initialize(settings.AUTH_LDAP_SERVER_URI)
-	l.simple_bind_s(settings.AUTH_LDAP_BIND_DN,settings.AUTH_LDAP_BIND_PASSWORD)
-
-	if es_exalumno(usuario):
-		# Mover desde exalumnos en ldap
-		l.rename_s("cn="+usuario+","+settings.LDAP_EXSTUDENTS_BASE, "cn="+usuario, "ou="+grado+","+settings.LDAP_STUDENTS_BASE)
-	else:
-		# Crear usuario en ldap
-		id_number = calcular_id('uidNumber')
-		attrs = {}
-		attrs['objectclass'] = ['posixAccount','shadowAccount','inetOrgPerson','person','extensibleObject','pgdi','top']
-		attrs['cn'] = str(alumno.user.username)
-		attrs['uid'] = str(alumno.user.username)
-		attrs['givenName'] = alumno.nombre.encode('utf-8')
-		attrs['sn'] = (alumno.apellido1+" "+alumno.apellido2).encode('utf-8')
-		attrs['mail'] = alumno.email.encode('utf-8')
-		attrs['telephoneNumber'] = str(alumno.telefono)
-		attrs['fnac'] = str(alumno.fecha_nac).replace('-','')+'000000Z'
-		attrs['dni'] = str(alumno.dni)
-		attrs['postalCode'] = str(alumno.cp)
-		attrs['street'] = alumno.direccion.encode('utf-8')
-		attrs['l'] = alumno.localidad.encode('utf-8')
-		attrs['st'] = alumno.provincia.encode('utf-8')
-		attrs['c'] = alumno.comunidad.encode('utf-8')
-		attrs['co'] = alumno.pais.encode('utf-8')
-		attrs['loginShell'] = str(settings.LOGIN_SHELL)
-		attrs['homeDirectory'] = str(settings.HOME_DIRECTORY+alumno.user.username)
-		attrs['uidNumber'] = str(id_number)
-		attrs['gidNumber'] = str(id_number)
-		attrs['userPassword'] = alumno.passwd.encode('utf-8')
-
-		dn="cn="+usuario+",ou="+grado+","+settings.LDAP_STUDENTS_BASE
-		ldif = modlist.addModlist(attrs)
-		l.add_s(dn,ldif)
-
-		# Crear grupo en ldap
-		attrs = {}
-		attrs['objectclass'] = ['posixGroup','top']
-		attrs['gidNumber'] = str(id_number)
-		attrs['memberUid'] = str(alumno.user.username)
-
-		dn="cn="+usuario+","+settings.LDAP_OS_BASE
-		ldif = modlist.addModlist(attrs)
-		l.add_s(dn,ldif)
-
-	# Agregar a grupos en ldap
-	old = {}
-	new = {'memberUid':str(alumno.user.username)}
-
-	dn="cn=alumnos,"+settings.LDAP_ROLES_BASE
-	ldif = modlist.modifyModlist(old,new)
-	l.modify_s(dn,ldif)
-
-	dn="cn="+grado+","+settings.LDAP_GRADES_BASE
-	ldif = modlist.modifyModlist(old,new)
-	l.modify_s(dn,ldif)
-
-	dn="cn=activos,"+settings.LDAP_ROLES_BASE
-	ldif = modlist.modifyModlist(old,new)
-	l.modify_s(dn,ldif)
-
-	for grp in Grupo.objects.filter(grado__cod=grado):
-		try:
-			dn=grp.dn
-			ldif = modlist.modifyModlist(old,new)
-			l.modify_s(dn,ldif)
-		except:
-			pass
-
-	l.unbind_s()
-
-	# Actualizar perfil temporal
-	alumno.validado = True
-	alumno.save()
-	# Envíar correo de bienvenida
-	construir_correo(alumno,grado,'WELCOME')
-	return alumno
-
-# Dar de baja alumnos
-def confirmar_baja(request, grado, usuario):
-	alumno = ldap_search(settings.LDAP_STUDENTS_BASE,ldap.SCOPE_SUBTREE,None,"(uid="+usuario+")")
-	return render(request, 'pgdiapp/confirmar_baja.html', { 'alumno': alumno, 'grado':grado })
-
-def baja(request, grado, usuario):
-	baja_efectiva(grado, usuario)
-	return render(request, 'pgdiapp/baja.html')
-
-def baja_efectiva(grado, usuario):
-	l = ldap.initialize(settings.AUTH_LDAP_SERVER_URI)
-	l.simple_bind_s(settings.AUTH_LDAP_BIND_DN,settings.AUTH_LDAP_BIND_PASSWORD)
-
-	# Mover a exalumnos en ldap
-	l.rename_s("cn="+usuario+",ou="+grado+","+settings.LDAP_STUDENTS_BASE, "cn="+usuario, settings.LDAP_EXSTUDENTS_BASE)
-
-	# Eliminar de grupos en ldap
-	dn="cn=alumnos,"+settings.LDAP_ROLES_BASE
-	old = ldap_search(dn,ldap.SCOPE_BASE,None,"(objectClass=posixGroup)")[0][0][1]
-	new = copy.deepcopy(old)
-	new['memberUid'].remove(usuario)
-	ldif = modlist.modifyModlist(old,new)
-	l.modify_s(dn,ldif)
-
-	dn="cn="+grado+","+settings.LDAP_GRADES_BASE
-	old = ldap_search(dn,ldap.SCOPE_BASE,None,"(objectClass=posixGroup)")[0][0][1]
-	new = copy.deepcopy(old)
-	new['memberUid'].remove(usuario)
-	ldif = modlist.modifyModlist(old,new)
-	l.modify_s(dn,ldif)
-
-	dn="cn=activos,"+settings.LDAP_ROLES_BASE
-	old = ldap_search(dn,ldap.SCOPE_BASE,None,"(objectClass=posixGroup)")[0][0][1]
-	new = copy.deepcopy(old)
-	new['memberUid'].remove(usuario)
-	ldif = modlist.modifyModlist(old,new)
-	l.modify_s(dn,ldif)
-
-	for grp in Grupo.objects.filter(grado__cod=grado):
-		try:
-			dn=grp.dn
-			old = ldap_search(dn,ldap.SCOPE_BASE,None,"(objectClass=posixGroup)")[0][0][1]
-			new = copy.deepcopy(old)
-			new['memberUid'].remove(usuario)
-			ldif = modlist.modifyModlist(old,new)
-			l.modify_s(dn,ldif)
-		except:
-			pass
-
-	l.unbind_s()
-
-	# Actualizar perfil temporal
-	exalumno = Perfil.objects.get(user__username=usuario)
-	respuestas = Respuesta.objects.filter(alumno=exalumno)
-	for respuesta in respuestas:
-		respuesta.delete()
-	exalumno.grado = None
-	exalumno.validado = False
-	exalumno.save()
-	# Envíar correo de despedida
-	construir_correo(exalumno,grado,'BYEBYE')
-
-# Descartar alumnos pre-registrados
-def confirmar_descarte(request, grado, usuario):
-	return render(request, 'pgdiapp/confirmar_descarte.html', { 'alumno': usuario, 'grado':grado })
-
-def descarte(request, grado, usuario):
-	descarte_efectivo(grado, usuario)
-	return render(request, 'pgdiapp/descarte.html', { 'alumno': usuario, 'grado':grado })
-
-def descarte_efectivo(grado, usuario):
-	alumno = User.objects.get(username=usuario)
-	if es_exalumno(usuario):
-		exalumno = Perfil.objects.get(user__username=usuario)
-		respuestas = Respuesta.objects.filter(alumno=exalumno)
-		for respuesta in respuestas:
-			respuesta.delete()
-		exalumno.grado = None
-		exalumno.save()
-	else:
-		alumno = User.objects.get(username=usuario)
-		alumno.delete()
-
-# Envío de emails
-def construir_correo(usuario, grado, tipo):
-	objMsg = Mensaje.objects.get(cod=tipo)
-	origen = settings.SMTP_NAME
-	destino = usuario.email
-	msg = MIMEMultipart()
-	msg['To'] = destino
-	msg['From'] = origen
-	msg['Subject'] = objMsg.asunto
-	mensaje = expandir_etiquetas(clean_html(objMsg.cuerpo),usuario.user.username,grado)
-	msg.attach(MIMEText(mensaje,'html'))
-	enviar_correo(origen,destino,msg)
-
-def expandir_etiquetas(mensaje,usuario,grado):
-	mensaje = mensaje.replace('{{USUARIO}}',usuario)
-	mensaje = mensaje.replace('{{GRADO}}',grado)
-	return mensaje
-
-def enviar_correo(origen,destino,msg):
-	try:
-		server = smtplib.SMTP(settings.SMTP_HOST)
-		server.starttls()
-		server.login(settings.SMTP_USER,settings.SMTP_PASS)
-		server.sendmail(origen, destino, msg.as_string())
-		server.quit()
-	except:
-		pass
 
 # Login
 def login_view(request):

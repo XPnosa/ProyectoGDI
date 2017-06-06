@@ -6,6 +6,11 @@ ReadMe
 
 **Changelog**
 
+- v1.9:
+	- Organización y ordenado de vistas y funciones
+	- Correcciones y cambios menores en plantillas
+	- Correcciones y algunas mejoras de seguridad
+
 - v1.8:
 	- Correcciones y otros cambios menores
 

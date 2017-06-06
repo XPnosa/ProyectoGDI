@@ -7,17 +7,17 @@
 			if (help) {
 				help = false;
 				document.getElementById('portada').style.display = "none";
-				document.getElementById('help').innerHTML = "Mostrar ayuda";
+				document.getElementById('help').innerHTML = "Mostrar ayuda ▼";
 			} else {
 				help = true;
 				document.getElementById('portada').style.display = "";
-				document.getElementById('help').innerHTML = "Ocultar ayuda";
+				document.getElementById('help').innerHTML = "Ocultar ayuda ▲";
 			}
 		}
 	</script>
 	<h2 class="sub-title">Perfil de {{ alumno.0.0.1.givenName.0 }} {{ alumno.0.0.1.sn.0 }}
 		{% if portada and user.is_authenticated and user.username == alumno.0.0.1.uid.0%}
-			<div class="help"><button id="help" class="btn btn-high" onclick="ayuda();">Mostrar ayuda</button></div></div>
+			<div class="help"><button id="help" class="btn btn-high" onclick="ayuda();">Mostrar ayuda ▼</button></div></div>
 		{% endif %}
 	</h2>
 	<div id="suit-center">

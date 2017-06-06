@@ -94,17 +94,19 @@ MAX_SIZE_FILE_LIMIT = 10
 QUOTA_WARN1_LEVEL = 60
 QUOTA_WARN2_LEVEL = 90
 
-# Campos de "repquota"
+# Campos de "repquota" para limites usado/blando/duro
 QUOTA_USED_DISK_FIELD = 3
 QUOTA_SOFT_LIMIT_FIELD = 4
 QUOTA_HARD_LIMIT_FIELD = 5
 
-# Uso de sudo
-PGDI_SUDO = True
-
-# SSH
-SSH_USER = "espinosa"
+# Parametros para la conexion SSH con el servidor NFS
+SSH_USER = "comandante"
 SSH_HOST = "pgdi"
+SSH_PORT = "22"
+
+# Ruta a las claves para la conexion SSH
+SSH_KEY_REPQUOTA = "/var/www/.ssh/id_rsa_repquota"
+SSH_KEY_DU = "/var/www/.ssh/id_rsa_du"
 
 # Application definition
 

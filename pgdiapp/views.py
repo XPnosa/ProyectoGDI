@@ -30,6 +30,42 @@ def index(request):
 	freeun = Configuracion.objects.get(clave='freeusername').valor
 	return render(request, 'pgdiapp/index.html', { 'openrg':openrg, 'freeun':freeun })
 
+# Listado de alumnos validados
+def alumnos(request):
+	try:
+		grupos = request.user.ldap_user.group_names
+	except:
+		return redirect('/app/login')
+	l_grados = obtener_grados(grupos)
+	# Operaciones múltiples
+	if request.method == 'POST' and 'l_grado' in request.POST:
+		grado = request.POST['l_grado']
+		# Confirmaciones
+		if 'actions' in request.POST and 'all_alumnos' in request.POST:
+			alumnos = request.POST.getlist('all_alumnos')
+			l_alumnos = []
+			for alumno in alumnos:
+				l_alumnos.append(ldap_search(settings.LDAP_STUDENTS_BASE,ldap.SCOPE_SUBTREE,None,"(uid="+alumno+")"))
+			if request.POST['actions'] == 'baja_selected':
+				return render(request, 'pgdiapp/confirmar_baja_multiple.html', { 'alumnos': l_alumnos, 'grado':grado })
+		# Bajas
+		if 'bajas' in request.POST and int(request.POST['bajas']) > 0:
+			alumnos = request.POST.getlist('all_alumnos')
+			for alumno in alumnos:
+				baja_efectiva(grado, alumno)
+			return render(request, 'pgdiapp/bajas.html', { 'grado':grado })
+	else:
+		grado = l_grados[0]
+		try:
+			for g in l_grados:
+				if g in request.META['HTTP_REFERER']:
+					grado = g
+		except:
+			pass
+	# Mostrar listado 
+	alumnos = ldap_search("ou="+grado+","+settings.LDAP_STUDENTS_BASE,ldap.SCOPE_ONELEVEL,None,"(objectClass=posixAccount)")
+	return render(request, 'pgdiapp/alumnos.html', { 'alumnos': alumnos, 'grado':grado, 'l_grados':l_grados })
+
 # Listado de alumnos registrados (no validados)
 def pendientes(request):
 	try:
@@ -74,42 +110,6 @@ def pendientes(request):
 	alumnos = Perfil.objects.filter(grado__cod=grado,validado=False)
 	return render(request, 'pgdiapp/pendientes.html', { 'alumnos': alumnos, 'grado':grado, 'l_grados':l_grados })
 
-# Listado de alumnos validados
-def alumnos(request):
-	try:
-		grupos = request.user.ldap_user.group_names
-	except:
-		return redirect('/app/login')
-	l_grados = obtener_grados(grupos)
-	# Operaciones múltiples
-	if request.method == 'POST' and 'l_grado' in request.POST:
-		grado = request.POST['l_grado']
-		# Confirmaciones
-		if 'actions' in request.POST and 'all_alumnos' in request.POST:
-			alumnos = request.POST.getlist('all_alumnos')
-			l_alumnos = []
-			for alumno in alumnos:
-				l_alumnos.append(ldap_search(settings.LDAP_STUDENTS_BASE,ldap.SCOPE_SUBTREE,None,"(uid="+alumno+")"))
-			if request.POST['actions'] == 'baja_selected':
-				return render(request, 'pgdiapp/confirmar_baja_multiple.html', { 'alumnos': l_alumnos, 'grado':grado })
-		# Bajas
-		if 'bajas' in request.POST and int(request.POST['bajas']) > 0:
-			alumnos = request.POST.getlist('all_alumnos')
-			for alumno in alumnos:
-				baja_efectiva(grado, alumno)
-			return render(request, 'pgdiapp/bajas.html', { 'grado':grado })
-	else:
-		grado = l_grados[0]
-		try:
-			for g in l_grados:
-				if g in request.META['HTTP_REFERER']:
-					grado = g
-		except:
-			pass
-	# Mostrar listado 
-	alumnos = ldap_search("ou="+grado+","+settings.LDAP_STUDENTS_BASE,ldap.SCOPE_ONELEVEL,None,"(objectClass=posixAccount)")
-	return render(request, 'pgdiapp/alumnos.html', { 'alumnos': alumnos, 'grado':grado, 'l_grados':l_grados })
-
 # Entrada al perfil
 def perfil(request, grado, usuario):
 	alumno = ldap_search("ou="+grado+","+settings.LDAP_STUDENTS_BASE,ldap.SCOPE_ONELEVEL,None,"(uid="+usuario+")")
@@ -125,8 +125,9 @@ def perfil(request, grado, usuario):
 	else:
 		portada = None
 	# Obtener quotas y espacio ocupado en disco
+	hd = alumno[0][0][1]['homeDirectory'][0]
 	usado, blando, duro = consultar_cuota(usuario)
-	top = consultar_mas_pesados(usuario,settings.MAX_SIZE_FILE_LIMIT)
+	top = consultar_mas_pesados(usuario,hd,settings.MAX_SIZE_FILE_LIMIT)
 	try:
 		p = float(usado) / float(blando) * float(100)
 	except:

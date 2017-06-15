@@ -8,10 +8,10 @@ from . import views
 urlpatterns = [
 	url(r'^$', views.index, name='index'),
 	url(r'^error$', views.error, name='error'),
-	url(r'^regreso$', views.regreso, name='regreso'),
 	url(r'^regmod$', views.regmod, name='regmod'),
 	url(r'^funmod$', views.funmod, name='funmod'),
 	url(r'^registro$', views.registro, name='registro'),
+	url(r'^regreso$', views.regreso, name='regreso'),
 	url(r'^login$', views.login_view, name='login_view'),
 	url(r'^logout$', views.logout_view, name='logout_view'),
 	url(r'^logout_redirect$', views.logoutr, name='logoutr'),

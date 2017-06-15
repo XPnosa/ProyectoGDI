@@ -43,7 +43,7 @@ def alta_efectiva(grado, usuario):
 		attrs['c'] = alumno.comunidad.encode('utf-8')
 		attrs['co'] = alumno.pais.encode('utf-8')
 		attrs['loginShell'] = str(settings.LOGIN_SHELL)
-		attrs['homeDirectory'] = str(settings.HOME_DIRECTORY+alumno.user.username)
+		attrs['homeDirectory'] = str(generar_directorio(usuario,grado))
 		attrs['uidNumber'] = str(id_number)
 		attrs['gidNumber'] = str(id_number)
 		attrs['userPassword'] = alumno.passwd.encode('utf-8')

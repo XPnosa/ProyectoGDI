@@ -31,11 +31,11 @@ def consultar_cuota(usuario):
 	return (cuota[settings.QUOTA_USED_DISK_FIELD],cuota[settings.QUOTA_SOFT_LIMIT_FIELD],cuota[settings.QUOTA_HARD_LIMIT_FIELD])
 
 # Consultar ficheros más pesados
-def consultar_mas_pesados(usuario,n=None):
-	parametros = str(settings.HOME_DIRECTORY + usuario) + '/*'
+def consultar_mas_pesados(usuario,homedir,n=None):
+	parametros = str(homedir) + '/*'
 	proceso = subprocess.Popen(["ssh", "-p" + str(settings.SSH_PORT), "-i" + str(settings.SSH_KEY_DU), settings.SSH_USER + "@" + settings.SSH_HOST, parametros], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
 	s1 = proceso.stdout.readlines()
-	parametros = str(settings.HOME_DIRECTORY + usuario) + '/.[!.]*'
+	parametros = str(homedir) + '/.[!.]*'
 	proceso = subprocess.Popen(["ssh", "-p" + str(settings.SSH_PORT), "-i" + str(settings.SSH_KEY_DU), settings.SSH_USER + "@" + settings.SSH_HOST, parametros], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
 	s2 = proceso.stdout.readlines()
 	salida = s1 + s2

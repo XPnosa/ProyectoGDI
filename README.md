@@ -6,6 +6,10 @@ ReadMe
 
 **Changelog**
 
+- v2.0:
+	- Añadida documentación del proyecto
+	- Correcciones y otros cambios menores
+
 - v1.9:
 	- Organización y ordenado de vistas y funciones
 	- Correcciones y cambios menores en plantillas

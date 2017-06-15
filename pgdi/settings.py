@@ -42,8 +42,7 @@ AUTH_LDAP_BIND_PASSWORD = "toor"
 AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=usuarios,dc=pgdi,dc=inf",
     ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
 AUTH_LDAP_GROUP_SEARCH = LDAPSearch("ou=grupos,dc=pgdi,dc=inf",
-    ldap.SCOPE_SUBTREE, "(objectClass=PosixGroup)"
-)
+    ldap.SCOPE_SUBTREE, "(objectClass=PosixGroup)")
 
 AUTH_LDAP_GROUP_TYPE = PosixGroupType(name_attr="cn")
 AUTH_LDAP_USER_FLAGS_BY_GROUP = {
@@ -59,8 +58,8 @@ AUTH_LDAP_USER_ATTR_MAP = {
     "email": "mail"
 }
 
-# ldap for pgdi
-
+# PGDI
+# ldap config
 LDAP_VERSION = ldap.VERSION3
 LDAP_SERVER_NAME = "pgdi"
 
@@ -74,18 +73,18 @@ LDAP_ROLES_BASE = "ou=roles," + LDAP_GROUPS_BASE
 LDAP_GRADES_BASE = "ou=grados," + LDAP_GROUPS_BASE
 LDAP_OS_BASE = "ou=so," + LDAP_GROUPS_BASE
 
-# smtp config
-
-SMTP_HOST = 'smtp.gmail.com'
-SMTP_USER = 'smtp.segundo.asir@gmail.com'
-SMTP_PASS = 'pass.segundo.asir'
-SMTP_NAME = 'Robot PGDI'
-
-# PGDI
 # Valores por defecto para los nuevos usuarios
-
 LOGIN_SHELL = '/bin/bash'
 HOME_DIRECTORY = '/home/pub/'
+
+# Parametros para la conexion SSH con el servidor NFS
+SSH_USER = "comandante"
+SSH_HOST = "pgdi"
+SSH_PORT = "22"
+
+# Ruta a las claves para la conexion SSH
+SSH_KEY_REPQUOTA = "/var/www/.ssh/id_rsa_repquota"
+SSH_KEY_DU = "/var/www/.ssh/id_rsa_du"
 
 # Numero de directorios de gran peso a mostrar
 MAX_SIZE_FILE_LIMIT = 10
@@ -99,14 +98,16 @@ QUOTA_USED_DISK_FIELD = 3
 QUOTA_SOFT_LIMIT_FIELD = 4
 QUOTA_HARD_LIMIT_FIELD = 5
 
-# Parametros para la conexion SSH con el servidor NFS
-SSH_USER = "comandante"
-SSH_HOST = "pgdi"
-SSH_PORT = "22"
+# smtp config
+SMTP_HOST = 'smtp.gmail.com'
+SMTP_USER = 'smtp.segundo.asir@gmail.com'
+SMTP_PASS = 'pass.segundo.asir'
+SMTP_NAME = 'Robot PGDI'
 
-# Ruta a las claves para la conexion SSH
-SSH_KEY_REPQUOTA = "/var/www/.ssh/id_rsa_repquota"
-SSH_KEY_DU = "/var/www/.ssh/id_rsa_du"
+# Django Suit configuration
+SUIT_CONFIG = {
+    'ADMIN_NAME': 'Admin. PGDI',
+}
 
 # Application definition
 
@@ -191,12 +192,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
-# Django Suit configuration
-
-SUIT_CONFIG = {
-    'ADMIN_NAME': 'Admin. PGDI',
-}
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/

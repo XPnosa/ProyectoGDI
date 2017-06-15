@@ -70,6 +70,11 @@ def generar_username(nom, ap1, ap2):
 		ap2 = ap2.replace(character,'')
 	return ''.join((c for c in unicodedata.normalize('NFD', (nom+ap1[:2]+ap2[:2]).lower()) if unicodedata.category(c) != 'Mn'))
 
+# Generación del directorio de casa
+def generar_directorio(usuario,grado):
+	home_dir = str(settings.HOME_DIRECTORY + usuario)
+	return home_dir
+
 # Cálculo de un nuevo uid/gid number
 def calcular_id(xid):
 	usuarios = ldap_search(settings.LDAP_USERS_BASE,ldap.SCOPE_SUBTREE,None,"(objectClass=person)")

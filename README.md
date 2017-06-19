@@ -6,6 +6,10 @@ ReadMe
 
 **Changelog**
 
+- DEMO:
+	- Prototipo final
+	- Correcciones y otros cambios menores
+
 - v2.0:
 	- Añadida documentación del proyecto
 	- Correcciones y otros cambios menores

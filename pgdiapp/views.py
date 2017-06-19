@@ -120,7 +120,7 @@ def perfil(request, grado, usuario):
 		alumno[0][0][1]['jpegPhoto'][0] = base64.b64encode(bytes(alumno[0][0][1]['jpegPhoto'][0]))
 	# Obtener mensajes de ayuda
 	if request.user.is_authenticated and not request.user.is_staff:
-		l_grado = Perfil.objects.get(user=request.user).grado
+		l_grado = Grado.objects.get(cod=grado)
 		portada = Portada.objects.filter(grado=l_grado,visible=True)
 	else:
 		portada = None
@@ -147,10 +147,18 @@ def editar(request, grado, usuario):
 	alumno = ldap_search("ou="+grado+","+settings.LDAP_STUDENTS_BASE,ldap.SCOPE_ONELEVEL,None,"(uid="+usuario+")")
 	if len(alumno) != 1:
 		return redirect('/app')
+	try:
+		perfil = Perfil.objects.get(user__username=usuario)
+	except:
+		try:
+			u = User.objects.get(username=usuario)
+			g = Grado.objects.get(cod=grado)
+			perfil = Perfil(user=u,grado=g,validado=True).save()
+		except:
+			return HttpResponseRedirect("/app/perfil/"+grado+"/"+usuario)
 	if request.method == 'POST':
 		pform = UserProfileMiniForm(data = request.POST)
 		if pform.is_valid():
-			perfil = Perfil.objects.get(user__username=usuario)
 			perfil.telefono = request.POST['telefono']
 			perfil.email = request.POST['email']
 			perfil.cp = request.POST['cp']

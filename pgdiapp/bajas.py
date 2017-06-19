@@ -63,12 +63,15 @@ def baja_efectiva(grado, usuario):
 	l.unbind_s()
 
 	# Actualizar perfil temporal
-	exalumno = Perfil.objects.get(user__username=usuario)
-	respuestas = Respuesta.objects.filter(alumno=exalumno)
-	for respuesta in respuestas:
-		respuesta.delete()
-	exalumno.grado = None
-	exalumno.validado = False
-	exalumno.save()
+	try:
+		exalumno = Perfil.objects.get(user__username=usuario)
+		respuestas = Respuesta.objects.filter(alumno=exalumno)
+		for respuesta in respuestas:
+			respuesta.delete()
+		exalumno.grado = None
+		exalumno.validado = False
+		exalumno.save()
+	except:
+		pass
 	# Envíar correo de despedida
 	construir_correo(exalumno,grado,'BYEBYE')
